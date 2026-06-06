@@ -152,3 +152,27 @@ POLICY_SECTIONS = [
         ],
     },
 ]
+
+# Production security/session/email/upload settings
+APP_ENV = os.getenv("APP_ENV", os.getenv("ENVIRONMENT", "development")).lower()
+IS_PRODUCTION = APP_ENV in {"production", "prod"}
+SESSION_COOKIE = os.getenv("SESSION_COOKIE", "session")
+CSRF_COOKIE = os.getenv("CSRF_COOKIE", "csrf_token")
+SESSION_TIMEOUT_MINUTES = int(os.getenv("SESSION_TIMEOUT_MINUTES", "45"))
+SESSION_MAX_AGE_SECONDS = SESSION_TIMEOUT_MINUTES * 60
+RATE_LIMIT_ENABLED = os.getenv("RATE_LIMIT_ENABLED", "true").lower() == "true"
+UPLOAD_MAX_BYTES = int(os.getenv("UPLOAD_MAX_BYTES", str(10 * 1024 * 1024)))
+UPLOAD_ALLOWED_EXTENSIONS = {item.strip().lower() for item in os.getenv("UPLOAD_ALLOWED_EXTENSIONS", ".csv,.pdf,.png,.jpg,.jpeg,.xlsx,.docx").split(",") if item.strip()}
+UPLOAD_ALLOWED_MIME_TYPES = {item.strip().lower() for item in os.getenv("UPLOAD_ALLOWED_MIME_TYPES", "text/csv,application/pdf,image/png,image/jpeg,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.openxmlformats-officedocument.wordprocessingml.document").split(",") if item.strip()}
+UPLOAD_DIR = STORAGE_DIR / "uploads"
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+SMTP_HOST = os.getenv("SMTP_HOST", "")
+SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+SMTP_USERNAME = os.getenv("SMTP_USERNAME", "")
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
+SMTP_FROM_EMAIL = os.getenv("SMTP_FROM_EMAIL", SMTP_USERNAME or "noreply@cdipd.local")
+SMTP_FROM_NAME = os.getenv("SMTP_FROM_NAME", "CDIPD Asset Management")
+SMTP_USE_TLS = os.getenv("SMTP_USE_TLS", "true").lower() == "true"
+EMAIL_NOTIFICATIONS_ENABLED = os.getenv("EMAIL_NOTIFICATIONS_ENABLED", "true").lower() == "true"
+SCHEDULER_ENABLED = os.getenv("SCHEDULER_ENABLED", "true").lower() == "true"

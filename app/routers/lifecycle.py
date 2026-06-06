@@ -68,9 +68,18 @@ async def create_backup_allocation(
     db: Session = Depends(get_db),
 ):
     current_user = get_current_user(request, db)
+    if expected_return_date and expected_return_date <= issue_date:
+        return redirect_with_flash("/backup/new", "Expected return date must be after issue date.", "error")
+    if backup_asset_id == primary_asset_id:
+        return redirect_with_flash("/backup/new", "Backup asset cannot be the same as primary asset.", "error")
+    primary_asset = db.get(Asset, primary_asset_id)
+    if not primary_asset or primary_asset.status not in {"under_maintenance", "active"}:
+        return redirect_with_flash("/backup/new", "Primary asset must be active or under repair/ticket-linked.", "error")
     backup_asset = db.get(Asset, backup_asset_id)
     if not backup_asset:
         return redirect_with_flash("/backup", "Backup asset not found.", "error")
+    if backup_asset.status != "available":
+        return redirect_with_flash("/backup/new", "Backup asset must be available.", "error")
     try:
         apply_transition(backup_asset, "status", "backup_allocated", ASSET_TRANSITIONS, "asset")
     except TransitionError as exc:
@@ -130,6 +139,8 @@ async def create_repair_entry(
     db: Session = Depends(get_db),
 ):
     current_user = get_current_user(request, db)
+    if estimated_residual_value < 0:
+        return redirect_with_flash("/disposal", "Estimated residual value cannot be negative.", "error")
     asset = db.get(Asset, asset_id)
     if not asset:
         return redirect_with_flash("/repairs", "Asset not found.", "error")
@@ -359,6 +370,8 @@ async def create_disposal_request(
     db: Session = Depends(get_db),
 ):
     current_user = get_current_user(request, db)
+    if estimated_residual_value < 0:
+        return redirect_with_flash("/disposal", "Estimated residual value cannot be negative.", "error")
     asset = db.get(Asset, asset_id)
     if not asset:
         return redirect_with_flash("/disposal", "Asset not found.", "error")
@@ -398,9 +411,13 @@ async def close_disposal_request(
     db: Session = Depends(get_db),
 ):
     current_user = get_current_user(request, db)
+    if not certificate_number.strip():
+        return redirect_with_flash("/disposal", "Disposal certificate is required before closure.", "error")
     item = db.get(DisposalRequest, disposal_id)
     if not item:
         return redirect_with_flash("/disposal", "Disposal request not found.", "error")
+    if item.status not in {"approved", "certificate_uploaded", "submitted"}:
+        return redirect_with_flash("/disposal", "Disposal must be approved before scrapping/closure.", "error")
     try:
         apply_transition(item.asset, "status", "scrapped", ASSET_TRANSITIONS, "asset")
     except TransitionError as exc:
@@ -459,6 +476,10 @@ async def create_procurement_plan(
     db: Session = Depends(get_db),
 ):
     current_user = get_current_user(request, db)
+    if forecast_period_months <= 0:
+        return redirect_with_flash("/procurement", "Forecast period is required.", "error")
+    if estimated_budget < 0:
+        return redirect_with_flash("/procurement", "Estimated budget must be non-negative.", "error")
     suggested_procurement = max(0, expected_demand + replacement_due - available_reusable_stock)
     plan = ProcurementPlan(
         category_name=category_name,

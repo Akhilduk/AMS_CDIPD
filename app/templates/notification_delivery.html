@@ -1,0 +1,4 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="surface"><table><thead><tr><th>When</th><th>Event</th><th>Recipient</th><th>Channel</th><th>Status</th><th>Error</th></tr></thead><tbody>{% for row in rows %}<tr><td>{{ row.created_at }}</td><td>{{ row.event_code }}</td><td>{{ row.recipient }}</td><td>{{ row.channel }}</td><td><span class="badge">{{ row.status }}</span></td><td>{{ row.error_message }}</td></tr>{% else %}<tr><td colspan="6" class="empty-state">No delivery attempts yet.</td></tr>{% endfor %}</tbody></table></section>
+{% endblock %}

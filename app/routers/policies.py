@@ -261,14 +261,14 @@ async def publish_policy(request: Request, policy_id: int, db: Session = Depends
     policy = db.get(PolicyVersion, policy_id)
     if not policy:
         raise HTTPException(status_code=404)
-    for item in db.scalars(select(PolicyVersion).where(PolicyVersion.published == True)).all():
+    if not policy.effective_date:
+        return redirect_with_flash("/policies", "Effective date is required before publishing.", "error")
+    for item in db.scalars(select(PolicyVersion).where(PolicyVersion.published == True, PolicyVersion.policy_master_id == policy.policy_master_id)).all():
         item.published = False
         if item.status == "published":
             item.status = "archived"
     policy.published = True
     policy.status = "published"
-    if not policy.effective_date:
-        policy.effective_date = date.today()
     db.commit()
     log_event(db, "policy_version", "publish", current_user.full_name, policy.version, new_value=policy.title)
     return redirect_with_flash("/policies", f"Policy version {policy.version} is now active.")

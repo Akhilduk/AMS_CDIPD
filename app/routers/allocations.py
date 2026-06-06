@@ -9,7 +9,7 @@ from sqlalchemy import or_, select, func
 from sqlalchemy.orm import Session
 
 from app.core.config import OTP_RESEND_COOLDOWN_SECONDS, STORAGE_DIR
-from app.models.models import Allocation, Asset, OTPChallenge, PolicyVersion, SignedDocument, User, Notification
+from app.models.models import Allocation, Asset, AuditLog, OTPChallenge, PolicyVersion, SignedDocument, User, Notification
 from app.services.helpers import POLICY_TERMS, DEMO_OTP_MODE, build_otp_state, create_notification, ensure_signed_document_templates, ensure_workflow_documents, get_current_user, get_db, log_event, redirect_with_flash, render, require_permission, require_roles, require_user, user_has_permission
 from app.services.workflows import ALLOCATION_TRANSITIONS, ASSET_TRANSITIONS, TransitionError, apply_transition, ensure_transition
 
@@ -303,6 +303,9 @@ async def view_document_html(document_id: int, request: Request, db: Session = D
     if current_user.role == "employee" and document.employee_id != current_user.id:
         raise HTTPException(status_code=403)
     allocation = document.allocation
+    subject_employee = document.employee or (allocation.employee if allocation else None)
+    subject_asset = document.asset or (allocation.asset if allocation else None)
+    subject_policy = document.policy or (allocation.policy if allocation else None)
     compare_id = request.query_params.get("compare_id")
     related_filters = []
     if document.employee_id:
@@ -322,6 +325,9 @@ async def view_document_html(document_id: int, request: Request, db: Session = D
         ).all()
     compare_document = next((item for item in related_documents if str(item.id) == compare_id), None)
     compare_allocation = compare_document.allocation if compare_document else None
+    compare_employee = (compare_document.employee if compare_document else None) or (compare_allocation.employee if compare_allocation else None)
+    compare_asset = (compare_document.asset if compare_document else None) or (compare_allocation.asset if compare_allocation else None)
+    compare_policy = (compare_document.policy if compare_document else None) or (compare_allocation.policy if compare_allocation else None)
     timeline_filters = [AuditLog.reference_id == document.document_number]
     if document.source_reference:
         timeline_filters.append(AuditLog.reference_id == document.source_reference)
@@ -336,10 +342,16 @@ async def view_document_html(document_id: int, request: Request, db: Session = D
         {
             "document": document,
             "allocation": allocation,
+            "subject_employee": subject_employee,
+            "subject_asset": subject_asset,
+            "subject_policy": subject_policy,
             "document_timeline": document_timeline,
             "related_documents": related_documents,
             "compare_document": compare_document,
             "compare_allocation": compare_allocation,
+            "compare_employee": compare_employee,
+            "compare_asset": compare_asset,
+            "compare_policy": compare_policy,
         },
         current_user,
     )

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="surface">
+  <form method="get" action="/search" class="actions">
+    <input type="search" name="q" value="{{ q }}" placeholder="Asset code, serial, employee, ticket, return, document..." autofocus>
+    <button class="btn primary" type="submit">Search</button>
+  </form>
+</div>
+{% if q %}
+  {% if grouped_results %}
+    {% for module, rows in grouped_results.items() %}
+    <section class="surface">
+      <div class="section-title">{{ module }}</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th></th><th>Result</th><th>Reference</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody>
+          {% for row in rows %}
+            <tr>
+              <td>{{ row.icon }}</td>
+              <td><strong>{{ row.title }}</strong></td>
+              <td>{{ row.subtitle }}</td>
+              <td><span class="badge">{{ row.status }}</span></td>
+              <td><a class="btn secondary" href="{{ row.url }}">Open</a></td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+    {% endfor %}
+  {% else %}
+    <div class="empty-state">No results found for “{{ q }}”.</div>
+  {% endif %}
+{% endif %}
+{% endblock %}

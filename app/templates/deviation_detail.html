@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="surface actions"><a class="btn secondary" href="/compliance/deviations">Back</a></div>
+<section class="surface tabs">
+  <div class="section-title">Overview</div>
+  <p><strong>Status:</strong> <span class="badge">{{ item.status }}</span></p>
+  <p><strong>Source:</strong> {{ item.source_module }} {{ item.source_reference }}</p>
+  <p><strong>Severity:</strong> {{ item.severity }}</p>
+</section>
+<section class="surface">
+  <div class="section-title">CAPA</div>
+  <p><strong>Corrective action:</strong> {{ item.corrective_action or '-' }}</p>
+  <p><strong>Preventive action:</strong> {{ item.preventive_action or '-' }}</p>
+  <p><strong>Closure evidence:</strong> {{ item.closure_evidence or '-' }}</p>
+</section>
+{% endblock %}

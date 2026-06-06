@@ -23,8 +23,8 @@
         <h3>Employee Details</h3>
       </div>
       <table class="details-table">
-        <tr><th>Name</th><td>{{ allocation.employee.full_name }}</td><th>Code</th><td>{{ allocation.employee.employee_code }}</td></tr>
-        <tr><th>Email</th><td>{{ allocation.employee.email }}</td><th>Department</th><td>{{ allocation.employee.department }}</td></tr>
+        <tr><th>Name</th><td>{{ subject_employee.full_name if subject_employee else "-" }}</td><th>Code</th><td>{{ subject_employee.employee_code if subject_employee else "-" }}</td></tr>
+        <tr><th>Email</th><td>{{ subject_employee.email if subject_employee else "-" }}</td><th>Department</th><td>{{ subject_employee.department if subject_employee else "-" }}</td></tr>
       </table>
     </section>
 
@@ -36,11 +36,11 @@
         <thead><tr><th>Asset</th><th>Model</th><th>Serial</th><th>Location</th><th>Status</th></tr></thead>
         <tbody>
           <tr>
-            <td>{{ allocation.asset.asset_code }} - {{ allocation.asset.name }}</td>
-            <td>{{ allocation.asset.model }}</td>
-            <td>{{ allocation.asset.serial_number }}</td>
-            <td>{{ allocation.asset.location.name }}</td>
-            <td>{{ allocation.asset.status }}</td>
+            <td>{{ (subject_asset.asset_code ~ " - " ~ subject_asset.name) if subject_asset else "-" }}</td>
+            <td>{{ subject_asset.model if subject_asset else "-" }}</td>
+            <td>{{ subject_asset.serial_number if subject_asset else "-" }}</td>
+            <td>{{ subject_asset.location.name if subject_asset and subject_asset.location else "-" }}</td>
+            <td>{{ subject_asset.status if subject_asset else "-" }}</td>
           </tr>
         </tbody>
       </table>
@@ -51,12 +51,11 @@
         <h3>Policy and Declaration</h3>
       </div>
       <div class="help" style="margin-bottom: 10px;">
-        {{ document.policy.title if document.policy else (allocation.policy.title if allocation and allocation.policy else "No linked policy") }}
-        | Version {{ document.policy.version if document.policy else (allocation.policy.version if allocation and allocation.policy else "N/A") }}
-        {% if document.policy or (allocation and allocation.policy) %}
-        {% set active_policy = document.policy if document.policy else allocation.policy %}
-        | Status {{ active_policy.status }}
-        | Master {{ active_policy.policy_master.policy_code if active_policy.policy_master else "-" }}
+        {{ subject_policy.title if subject_policy else "No linked policy" }}
+        | Version {{ subject_policy.version if subject_policy else "N/A" }}
+        {% if subject_policy %}
+        | Status {{ subject_policy.status }}
+        | Master {{ subject_policy.policy_master.policy_code if subject_policy.policy_master else "-" }}
         {% endif %}
       </div>
       <div class="panel-note">{{ allocation.declaration_text if allocation else "Workflow-generated document linked to the active policy context." }}</div>
@@ -124,17 +123,17 @@
       <div class="diff-card">
         <div class="kicker">Current</div>
         <div style="font-weight: 800; margin-top: 8px;">{{ document.document_number }}</div>
-        <div class="help">Employee: {{ document.employee.full_name if document.employee else (allocation.employee.full_name if allocation and allocation.employee else "-") }}</div>
-        <div class="help">Asset: {{ document.asset.asset_code if document.asset else (allocation.asset.asset_code if allocation and allocation.asset else "-") }}</div>
-        <div class="help">Policy: {{ document.policy.version if document.policy else (allocation.policy.version if allocation and allocation.policy else "N/A") }}</div>
+        <div class="help">Employee: {{ subject_employee.full_name if subject_employee else "-" }}</div>
+        <div class="help">Asset: {{ subject_asset.asset_code if subject_asset else "-" }}</div>
+        <div class="help">Policy: {{ subject_policy.version if subject_policy else "N/A" }}</div>
         <div class="help">Template: {{ document.template_code or "N/A" }}</div>
       </div>
       <div class="diff-card">
         <div class="kicker">Compared</div>
         <div style="font-weight: 800; margin-top: 8px;">{{ compare_document.document_number }}</div>
-        <div class="help">Employee: {{ compare_document.employee.full_name if compare_document.employee else (compare_allocation.employee.full_name if compare_allocation and compare_allocation.employee else "-") }}</div>
-        <div class="help">Asset: {{ compare_document.asset.asset_code if compare_document.asset else (compare_allocation.asset.asset_code if compare_allocation and compare_allocation.asset else "-") }}</div>
-        <div class="help">Policy: {{ compare_document.policy.version if compare_document.policy else (compare_allocation.policy.version if compare_allocation and compare_allocation.policy else "N/A") }}</div>
+        <div class="help">Employee: {{ compare_employee.full_name if compare_employee else "-" }}</div>
+        <div class="help">Asset: {{ compare_asset.asset_code if compare_asset else "-" }}</div>
+        <div class="help">Policy: {{ compare_policy.version if compare_policy else "N/A" }}</div>
         <div class="help">Template: {{ compare_document.template_code or "N/A" }}</div>
       </div>
     </div>

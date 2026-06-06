@@ -50,6 +50,12 @@ async def new_return_page(request: Request, db: Session = Depends(get_db)):
 @require_permission("returns", "view")
 async def return_detail(request: Request, return_id: int, db: Session = Depends(get_db)):
     current_user = get_current_user(request, db)
+    if liability_amount < 0:
+        return redirect_with_flash("/returns", "Liability amount cannot be negative.", "error")
+    if exit_clearance_status == "completed" and not qr_verified:
+        return redirect_with_flash("/returns", "Final clearance is blocked until the asset is verified.", "error")
+    if exit_clearance_status == "completed" and liability_amount > 0:
+        return redirect_with_flash("/returns", "No-dues/final clearance is blocked while liability is pending.", "error")
     item = db.get(ReturnRequest, return_id)
     if not item:
         raise HTTPException(status_code=404, detail="Return request not found")
@@ -96,6 +102,12 @@ async def verify_return(
     db: Session = Depends(get_db),
 ):
     current_user = get_current_user(request, db)
+    if liability_amount < 0:
+        return redirect_with_flash("/returns", "Liability amount cannot be negative.", "error")
+    if exit_clearance_status == "completed" and not qr_verified:
+        return redirect_with_flash("/returns", "Final clearance is blocked until the asset is verified.", "error")
+    if exit_clearance_status == "completed" and liability_amount > 0:
+        return redirect_with_flash("/returns", "No-dues/final clearance is blocked while liability is pending.", "error")
     item = db.get(ReturnRequest, return_id)
     old_status = item.status
     old_clearance = item.exit_clearance_status

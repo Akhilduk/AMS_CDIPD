@@ -7,6 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.models import PasswordResetToken, User
+from app.core.config import IS_PRODUCTION, SESSION_COOKIE, SESSION_MAX_AGE_SECONDS
 from app.services.helpers import authenticate_user, create_notification, get_current_user, get_db, hash_password, log_event, redirect_with_flash, render, serializer
 
 router = APIRouter()
@@ -38,7 +39,7 @@ async def login(request: Request, email: str = Form(...), password: str = Form(.
     db.commit()
     log_event(db, "auth", "login_success", user.full_name, user.email, new_value=f"last_login={user.last_login.isoformat()}")
     response = redirect_with_flash("/dashboard", f"Welcome back, {user.full_name}.", "success")
-    response.set_cookie("session", serializer.dumps({"user_id": user.id}), httponly=True, samesite="lax")
+    response.set_cookie(SESSION_COOKIE, serializer.dumps({"user_id": user.id, "issued_at": int(datetime.utcnow().timestamp()), "last_activity": int(datetime.utcnow().timestamp())}), max_age=SESSION_MAX_AGE_SECONDS, expires=SESSION_MAX_AGE_SECONDS, httponly=True, samesite="lax", secure=IS_PRODUCTION)
     return response
 
 
@@ -117,5 +118,5 @@ async def reset_password(
 @router.get("/logout")
 async def logout():
     response = redirect_with_flash("/login", "You have been signed out.", "success")
-    response.delete_cookie("session")
+    response.delete_cookie(SESSION_COOKIE)
     return response

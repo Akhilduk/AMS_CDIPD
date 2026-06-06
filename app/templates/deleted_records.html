@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="surface">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Module</th><th>Record</th><th>Deleted</th><th>By</th><th>Reason</th><th>Actions</th></tr></thead>
+      <tbody>
+      {% for item in records %}
+        <tr>
+          <td>{{ item.module }}</td><td>{{ item.label }}</td><td>{{ item.deleted_at or '-' }}</td><td>{{ item.deleted_by }}</td><td>{{ item.reason }}</td>
+          <td>
+            <div class="actions">
+              <form method="post" action="/admin/deleted-records/{{ item.module }}/{{ item.id }}/restore"><button class="btn secondary" type="submit" data-confirm="Restore this record?">Restore</button></form>
+              <form method="post" action="/admin/deleted-records/{{ item.module }}/{{ item.id }}/permanent-delete" class="actions"><input name="reason" required placeholder="Reason"><button class="btn ghost" type="submit" data-confirm="Permanently delete this record?">Permanent delete</button></form>
+            </div>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="6" class="empty-state">No deleted records.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

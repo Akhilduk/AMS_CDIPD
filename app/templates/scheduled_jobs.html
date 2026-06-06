@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="surface">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Job</th><th>Next run</th><th>Last status</th><th>Last run</th><th>Error / Message</th><th>Actions</th></tr></thead>
+      <tbody>
+      {% for job in jobs %}
+        <tr>
+          <td><strong>{{ job.name }}</strong><br><span class="muted">{{ job.code }}</span></td>
+          <td>{{ job.next_run }}</td>
+          <td><span class="badge">{{ job.last_run.status if job.last_run else 'never_run' }}</span></td>
+          <td>{{ job.last_run.started_at if job.last_run else '-' }}</td>
+          <td>{{ job.last_run.message if job.last_run else '-' }}</td>
+          <td>
+            <form method="post" action="/admin/scheduled-jobs/run/{{ job.code }}">
+              <button class="btn secondary" type="submit" data-confirm="Run this scheduled job now?">Run manually</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

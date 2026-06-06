@@ -68,6 +68,10 @@
             {% endif %}
             <div class="spacer"></div>
             {% if current_user %}
+            <form id="global-search" action="/search" method="get" class="global-search" style="display:flex; gap:6px; align-items:center;">
+              <input type="search" name="q" value="{{ request.query_params.get('q', '') }}" placeholder="Search assets, employees, tickets..." aria-label="Global search" style="min-width:260px;">
+              <button class="btn secondary" type="submit">Search</button>
+            </form>
             <a class="btn icon-btn" href="/notifications" title="Notifications{% if unread_notifications %} ({{ unread_notifications }}){% endif %}">🔔{% if unread_notifications %}<span class="badge-dot">●</span>{% endif %}</a>
             {% endif %}
             {% if current_user %}
@@ -107,6 +111,7 @@
   </dialog>
 
   <script>
+    window.CDIPD_CSRF_TOKEN = {{ csrf_token|tojson }};
     (function () {
       const key = "cdipd-theme";
       const root = document.body;
@@ -181,6 +186,14 @@
       }
 
       document.querySelectorAll("form").forEach(function (form) {
+        const method = (form.getAttribute("method") || "get").toLowerCase();
+        if (method !== "get" && !form.querySelector("input[name=csrf_token]")) {
+          const csrf = document.createElement("input");
+          csrf.type = "hidden";
+          csrf.name = "csrf_token";
+          csrf.value = window.CDIPD_CSRF_TOKEN || "";
+          form.prepend(csrf);
+        }
         form.querySelectorAll("input, select, textarea").forEach(function (field) {
           field.setAttribute("data-live-validate", "true");
           const help = document.createElement("div");

@@ -172,6 +172,14 @@ async def create_travel_request(
     db: Session = Depends(get_db),
 ):
     current_user = get_current_user(request, db)
+    if return_date <= departure_date:
+        return redirect_with_flash("/travel", "Return date must be after travel start date.", "error")
+    active_allocation = db.scalar(select(Allocation).where(Allocation.asset_id == asset_id, Allocation.employee_id == current_user.id, Allocation.status.in_(["signed", "pending_signature"])))
+    if not active_allocation:
+        return redirect_with_flash("/travel", "Only an active allocated asset can be requested for abroad travel.", "error")
+    duplicate = db.scalar(select(TravelRequest).where(TravelRequest.asset_id == asset_id, TravelRequest.employee_id == current_user.id, TravelRequest.status.in_(["submitted", "approved"])))
+    if duplicate:
+        return redirect_with_flash("/travel", "You already have an open abroad request for this asset.", "error")
     travel = TravelRequest(
         asset_id=asset_id,
         employee_id=current_user.id,

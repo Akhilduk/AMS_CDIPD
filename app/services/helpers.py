@@ -61,6 +61,7 @@ from app.models.models import *
 from app.core.config import *
 from app.core.security import serializer, verify_password, pwd_context
 from app.services.auth_adapter import get_auth_adapter
+from app.services.email import send_notification_email
 
 
 auth_adapter = get_auth_adapter()
@@ -301,6 +302,7 @@ def require_permission(module: str, action: str):
 
 
 def render(request: Request, template: str, context: dict, user: Optional[User] = None):
+    csrf_token = request.cookies.get(CSRF_COOKIE) or secrets.token_urlsafe(32)
     flash = None
     raw_flash = request.cookies.get(FLASH_COOKIE)
     if raw_flash:
@@ -309,6 +311,7 @@ def render(request: Request, template: str, context: dict, user: Optional[User] 
         except BadSignature:
             flash = None
     response = templates.TemplateResponse(
+        request,
         template,
         {
             "request": request,
@@ -320,6 +323,7 @@ def render(request: Request, template: str, context: dict, user: Optional[User] 
             "role_switch_roles": get_user_roles(user),
             "unread_notifications": sum(1 for item in user.notifications if not item.is_read) if user else 0,
             "theme_settings_enabled": True,
+            "csrf_token": csrf_token,
             "flash": flash,
             "policy_sample_available": POLICY_SAMPLE_FILE.exists(),
             "policy_sample_url": "/policy/current",
@@ -335,12 +339,13 @@ def render(request: Request, template: str, context: dict, user: Optional[User] 
     )
     if raw_flash:
         response.delete_cookie(FLASH_COOKIE)
+    response.set_cookie(CSRF_COOKIE, csrf_token, max_age=SESSION_MAX_AGE_SECONDS, httponly=True, samesite="lax", secure=IS_PRODUCTION)
     return response
 
 
 def redirect_with_flash(url: str, message: str, level: str = "success"):
     response = RedirectResponse(url, status_code=303)
-    response.set_cookie(FLASH_COOKIE, serializer.dumps({"message": message, "level": level}), httponly=True, samesite="lax")
+    response.set_cookie(FLASH_COOKIE, serializer.dumps({"message": message, "level": level}), httponly=True, samesite="lax", secure=IS_PRODUCTION)
     return response
 
 
@@ -542,6 +547,11 @@ SIDEBAR_GROUPS = {
                 {"path": "/management/reports", "label": "Reports", "icon": "📈"},
                 {"path": "/admin/roles", "label": "Roles", "icon": "🛡️"},
                 {"path": "/admin/permissions", "label": "Permissions", "icon": "🔐"},
+                {"path": "/admin/scheduled-jobs", "label": "Scheduled Jobs", "icon": "⏱️"},
+                {"path": "/admin/deleted-records", "label": "Recovery", "icon": "♻️"},
+                {"path": "/admin/email-templates", "label": "Email Templates", "icon": "✉️"},
+                {"path": "/admin/notification-delivery", "label": "Delivery Log", "icon": "📨"},
+                {"path": "/compliance/deviations", "label": "Deviations/CAPA", "icon": "⚠️"},
             ],
         },
     ],
@@ -646,6 +656,9 @@ def build_nav_items(user: Optional[User]) -> list[dict]:
                 {"path": "/admin/roles", "label": "Roles"},
                 {"path": "/admin/permissions", "label": "Permissions"},
                 {"path": "/notifications", "label": "Notifications"},
+                {"path": "/admin/scheduled-jobs", "label": "Scheduled Jobs"},
+                {"path": "/admin/deleted-records", "label": "Recovery"},
+                {"path": "/compliance/deviations", "label": "Deviations"},
             ]
         )
     elif user:
@@ -697,6 +710,10 @@ def create_notification(db: Session, user_id: int, event_code: str, title: str, 
     )
     db.add(notification)
     db.flush()
+    user = db.get(User, user_id)
+    if user:
+        delivered = send_notification_email(db, user, event_code, title, message, link_url, notification.id)
+        notification.delivery_status = "email_sent" if delivered else "in_app_fallback"
     return notification
 
 

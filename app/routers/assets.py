@@ -9,6 +9,7 @@ from app.models.models import User, Category, Vendor, Location, PolicyVersion, A
 from app.services.helpers import get_db, render, verify_password, serializer, require_user, require_permission, require_roles, redirect_with_flash, log_event, hash_password, get_current_user, generate_asset_code, generate_document_number, build_role_dashboard, build_request_history, build_asset_history, extract_policy_sections, build_management_summary, save_qr, get_current_holder, build_policy_status, get_numbering_setting, get_published_policy, generate_signed_pdf, create_signed_document_record, build_otp_state, parse_change_payload, DEMO_OTP_MODE
 import io
 import csv
+from app.services.uploads import store_secure_upload
 
 router = APIRouter()
 
@@ -72,7 +73,8 @@ async def bulk_upload_assets(
     db: Session = Depends(get_db),
 ):
     current_user = get_current_user(request, db)
-    content = (await file.read()).decode("utf-8")
+    stored_path = await store_secure_upload(file, "asset_bulk")
+    content = stored_path.read_text(encoding="utf-8")
     reader = csv.DictReader(io.StringIO(content))
     errors = []
     for row in reader:
@@ -94,7 +96,7 @@ async def bulk_upload_assets(
         asset.qr_path = save_qr(asset)
     db.commit()
     if errors:
-        log_event(db, "asset", "bulk_upload_partial", current_user.full_name, file.filename, new_value="; ".join(errors))
+        log_event(db, "asset", "bulk_upload_partial", current_user.full_name, str(stored_path), new_value="; ".join(errors))
         return redirect_with_flash("/assets", f"Bulk upload completed with issues: {'; '.join(errors[:3])}", "warning")
     return redirect_with_flash("/assets", "Bulk upload completed successfully.")
 

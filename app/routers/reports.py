@@ -20,6 +20,8 @@ from app.models.models import (
     DisposalRequest,
     LiabilityRecord,
     MaintenanceTicket,
+    NotificationDeliveryLog,
+    ComplianceDeviation,
     PolicyVersion,
     ProcurementPlan,
     RepairEntry,
@@ -145,6 +147,8 @@ def build_report_catalog(db: Session) -> dict[str, dict]:
     logs = db.scalars(select(AuditLog).order_by(AuditLog.created_at.desc())).all()
     verification_campaigns = db.scalars(select(VerificationCampaign).order_by(VerificationCampaign.created_at.desc())).all()
     verification_executions = db.scalars(select(VerificationExecution).order_by(VerificationExecution.created_at.desc())).all()
+    deviations = db.scalars(select(ComplianceDeviation).order_by(ComplianceDeviation.created_at.desc())).all()
+    delivery_logs = db.scalars(select(NotificationDeliveryLog).order_by(NotificationDeliveryLog.created_at.desc())).all()
 
     category_rows = []
     for category in sorted({asset.category.name for asset in assets}):
@@ -184,7 +188,7 @@ def build_report_catalog(db: Session) -> dict[str, dict]:
         if asset.warranty_until and 0 <= (asset.warranty_until - today).days <= 30
     ]
 
-    return {
+    catalog = {
         "assets_all": make_report(
             "Master Asset Ledger",
             ["Asset", "Status", "Location", "Holder"],
@@ -431,6 +435,38 @@ def build_report_catalog(db: Session) -> dict[str, dict]:
             date_filter={"index": 4, "label": "When"},
         ),
     }
+
+    catalog.update({
+        "category_utilization": make_report("Category-wise Utilization Report", ["Category", "Total", "Available", "Allocated", "Utilization %"], [[row[0], row[1], row[2], row[3], round((row[3] / row[1] * 100), 2) if row[1] else 0] for row in category_rows], "category_utilization"),
+        "department_utilization": make_report("Department-wise Utilization Report", ["Department", "Allocations", "Signed", "Pending", "Returned"], department_rows, "department_utilization"),
+        "project_assets": make_report("Project-wise Asset Report", ["Project", "Asset", "Holder", "Status"], [[getattr(asset, "specification", "CDIPD") or "CDIPD", asset.asset_code, get_current_holder(asset, db), asset.status] for asset in assets], "project_assets"),
+        "location_room_assets": make_report("Location/Room-wise Asset Report", ["Location", "Asset", "Category", "Status"], [[asset.location.name, asset.asset_code, asset.category.name, asset.status] for asset in assets], "location_room_assets"),
+        "asset_value": make_report("Asset Value Report", ["Asset", "Category", "Purchase Date", "Value"], [[asset.asset_code, asset.category.name, asset.purchase_date.isoformat() if asset.purchase_date else "-", getattr(asset, "acquisition_value", 0)] for asset in assets], "asset_value"),
+        "asset_ageing": make_report("Asset Ageing Report", ["Asset", "Category", "Purchase Date", "Age Days", "Status"], [[asset.asset_code, asset.category.name, asset.purchase_date.isoformat() if asset.purchase_date else "-", (today - asset.purchase_date).days if asset.purchase_date else 0, asset.status] for asset in assets], "asset_ageing"),
+        "idle_asset_ageing": make_report("Idle Asset Ageing Report", ["Asset", "Category", "Idle Days", "Location"], [[asset.asset_code, asset.category.name, (today - asset.created_at.date()).days, asset.location.name] for asset in assets if asset.status == "available"], "idle_asset_ageing"),
+        "reallocation_candidates": make_report("Reallocation Candidate Report", ["Asset", "Category", "Location", "Reason"], [[asset.asset_code, asset.category.name, asset.location.name, "Idle stock"] for asset in assets if asset.status == "available"], "reallocation_candidates"),
+        "replacement_due": make_report("Replacement Due Report", ["Asset", "Category", "Warranty", "Status"], [[asset.asset_code, asset.category.name, asset.warranty_until.isoformat() if asset.warranty_until else "-", asset.status] for asset in warranty_expired_assets], "replacement_due"),
+        "repeated_issue_assets": make_report("Repeated Issue Asset Report", ["Asset", "Ticket Count", "Repair Count"], [[asset.asset_code, sum(1 for t in tickets if t.asset_id == asset.id), sum(1 for r in repairs if r.asset_id == asset.id)] for asset in assets if sum(1 for t in tickets if t.asset_id == asset.id) > 1], "repeated_issue_assets"),
+        "repair_cost_analysis": make_report("Repair Cost Analysis Report", ["Asset", "Repair Type", "Cost", "Warranty Claim"], [[item.asset.asset_code, item.repair_type, item.repair_cost, "Yes" if item.warranty_claim else "No"] for item in repairs], "repair_cost_analysis"),
+        "warranty_claims": make_report("Warranty Claim Report", ["Asset", "Repair", "Cost", "Created"], [[item.asset.asset_code, item.repair_type, item.repair_cost, item.created_at.date().isoformat()] for item in repairs if item.warranty_claim], "warranty_claims"),
+        "backup_overdue": make_report("Backup Overdue Report", ["Employee", "Backup Asset", "Expected Return", "Status"], [[item.employee.full_name, item.backup_asset.asset_code, item.expected_return_date.isoformat() if item.expected_return_date else "-", item.status] for item in backup_allocations if item.status == "active" and item.expected_return_date and item.expected_return_date < today], "backup_overdue"),
+        "abroad_overdue_returns": make_report("Abroad Overdue Return Report", ["Employee", "Asset", "Country", "Return Date", "Status"], [[item.employee.full_name, item.asset.asset_code, item.destination_country, item.return_date.isoformat(), item.status] for item in travels if item.status == "approved" and item.return_date < today], "abroad_overdue_returns"),
+        "policy_version_comparison": make_report("Policy Version Comparison Report", ["Policy", "Version", "Status", "Signed Count"], [[item.title, item.version, item.status, sum(1 for doc in documents if doc.policy_id == item.id)] for item in policies], "policy_version_comparison"),
+        "unsigned_policy_ageing": make_report("Unsigned Policy Ageing Report", ["Employee", "Asset", "Age Days", "Policy"], [[item.employee.full_name, item.asset.asset_code, (today - item.created_at.date()).days, item.policy.version if item.policy else "-"] for item in allocations if item.status == "pending_signature"], "unsigned_policy_ageing"),
+        "compliance_deviations": make_report("Compliance Deviation Report", ["Deviation", "Source", "Severity", "Status", "Due"], [[item.deviation_number, item.source_module, item.severity, item.status, item.due_date.isoformat() if item.due_date else "-"] for item in deviations], "compliance_deviations"),
+        "corrective_actions": make_report("Corrective Action Report", ["Deviation", "Corrective Action", "Preventive Action", "Status"], [[item.deviation_number, item.corrective_action, item.preventive_action, item.status] for item in deviations], "corrective_actions"),
+        "disposal_approval_ageing": make_report("Disposal Approval Ageing Report", ["Request", "Asset", "Age Days", "Status"], [[f"#{item.id}", item.asset.asset_code, (today - item.created_at.date()).days, item.status] for item in disposals if item.status not in {"closed", "rejected"}], "disposal_approval_ageing"),
+        "ewaste_disposal_register": make_report("E-waste Disposal Register", ["Request", "Asset", "Vendor", "Method", "Certificate"], [[f"#{item.id}", item.asset.asset_code, item.vendor_agency, item.disposal_method, item.certificate_number] for item in disposals], "ewaste_disposal_register"),
+        "disposal_certificate_repository": make_report("Disposal Certificate Repository", ["Certificate", "Asset", "Date", "Path"], [[item.certificate_number or "-", item.asset.asset_code, item.disposal_date.isoformat() if item.disposal_date else "-", getattr(item, "certificate_path", "")] for item in disposals], "disposal_certificate_repository"),
+        "procurement_forecast_3m": make_report("Procurement Forecast 3-month Report", ["Category", "Department", "Suggested", "Budget"], [[item.category_name, item.department, item.suggested_procurement, item.estimated_budget] for item in procurement_plans if item.forecast_period_months == 3], "procurement_forecast_3m"),
+        "procurement_forecast_6m": make_report("Procurement Forecast 6-month Report", ["Category", "Department", "Suggested", "Budget"], [[item.category_name, item.department, item.suggested_procurement, item.estimated_budget] for item in procurement_plans if item.forecast_period_months == 6], "procurement_forecast_6m"),
+        "procurement_forecast_12m": make_report("Procurement Forecast 12-month Report", ["Category", "Department", "Suggested", "Budget"], [[item.category_name, item.department, item.suggested_procurement, item.estimated_budget] for item in procurement_plans if item.forecast_period_months == 12], "procurement_forecast_12m"),
+        "shortage_excess_stock": make_report("Shortage/Excess Stock Report", ["Category", "Stock", "Suggested Procurement", "Variance"], [[item.category_name, stock_map if False else item.available_reusable_stock, item.suggested_procurement, item.available_reusable_stock - item.suggested_procurement] for item in procurement_plans], "shortage_excess_stock"),
+        "audit_evidence_package": make_report("Audit Evidence Package Report", ["Document", "Source", "Hash", "Created"], [[item.document_number, item.source_module, item.hash_sha256, item.created_at.date().isoformat()] for item in documents], "audit_evidence_package"),
+        "failed_login": make_report("Failed Login Report", ["User", "Email", "Failed Attempts", "Last Login"], [[item.full_name, item.email, item.failed_login_attempts, item.last_login.date().isoformat() if item.last_login else "-"] for item in users if item.failed_login_attempts], "failed_login"),
+        "notification_delivery": make_report("Notification Delivery Report", ["Event", "Recipient", "Channel", "Status", "When"], [[item.event_code, item.recipient, item.channel, item.status, item.created_at.date().isoformat()] for item in delivery_logs], "notification_delivery"),
+    })
+    return catalog
 
 
 @router.get("/reports", response_class=HTMLResponse)

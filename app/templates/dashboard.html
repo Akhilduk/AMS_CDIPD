@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% set page_title = "Dashboard" %}
 {% set page_subtitle = "" %}
+{% macro status_badge(value) %}<span class="status {{ (value|string|lower).replace(' ', '_') }}">{{ (value|string).replace('_', ' ').title() }}</span>{% endmacro %}
 {% block content %}
 <div class="stack">
   <div class="summary-grid">
@@ -27,7 +28,7 @@
           {% for item in primary_rows %}
           <tr>
             <td>{{ item.asset.asset_code }} - {{ item.asset.name }}</td>
-            <td>{{ item.status }}</td>
+            <td>{{ status_badge(item.status) }}</td>
             <td>
               {% if item.status == "pending_signature" %}
               <a href="/allocations">Sign</a>
@@ -80,7 +81,7 @@
           {% for item in primary_rows %}
           <tr>
             <td>{{ item.asset_code }} - {{ item.name }}</td>
-            <td>{{ item.status }}</td>
+            <td>{{ status_badge(item.status) }}</td>
             <td><a href="/assets/{{ item.id }}/history">View</a></td>
           </tr>
           {% else %}
@@ -104,7 +105,7 @@
           <tr>
             <td>#{{ item.id }}</td>
             <td>{{ item.asset.asset_code }}</td>
-            <td>{{ item.status }}</td>
+            <td>{{ status_badge(item.status) }}</td>
           </tr>
           {% else %}
           <tr><td colspan="3"><div class="empty-state">No maintenance tickets available.</div></td></tr>
@@ -128,7 +129,7 @@
           <tr>
             <td>{{ item.asset.asset_code }}</td>
             <td>{{ item.employee.full_name }}</td>
-            <td>{{ item.status }}</td>
+            <td>{{ status_badge(item.status) }}</td>
           </tr>
           {% else %}
           <tr><td colspan="3"><div class="empty-state">No approval items pending.</div></td></tr>
@@ -151,7 +152,7 @@
           <tr>
             <td>{{ item.asset.asset_code }}</td>
             <td>{{ item.employee.full_name }}</td>
-            <td>{{ item.exit_clearance_status }}</td>
+            <td>{{ status_badge(item.exit_clearance_status) }}</td>
           </tr>
           {% else %}
           <tr><td colspan="3"><div class="empty-state">No return cases available.</div></td></tr>
@@ -175,7 +176,7 @@
           <tr>
             <td>{{ item.employee.full_name }}</td>
             <td>{{ item.asset.asset_code }}</td>
-            <td>{{ item.status }}</td>
+            <td>{{ status_badge(item.status) }}</td>
           </tr>
           {% else %}
           <tr><td colspan="3"><div class="empty-state">No travel requests available.</div></td></tr>
@@ -197,7 +198,7 @@
           {% for item in secondary_rows %}
           <tr>
             <td>{{ item.asset_code }} - {{ item.name }}</td>
-            <td>{{ item.status }}</td>
+            <td>{{ status_badge(item.status) }}</td>
             <td><a href="/assets/{{ item.id }}/history">View</a></td>
           </tr>
           {% else %}
@@ -244,7 +245,7 @@
           {% for item in secondary_rows %}
           <tr>
             <td>{{ item.asset.asset_code }}</td>
-            <td>{{ item.result }}</td>
+            <td>{{ status_badge(item.result) }}</td>
             <td>{{ item.verified_by.full_name }}</td>
           </tr>
           {% else %}

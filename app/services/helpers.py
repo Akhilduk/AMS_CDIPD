@@ -340,6 +340,7 @@ def render(request: Request, template: str, context: dict, user: Optional[User] 
     )
     if raw_flash:
         response.delete_cookie(FLASH_COOKIE)
+    response.set_cookie(CSRF_COOKIE, csrf_token, max_age=SESSION_MAX_AGE_SECONDS, httponly=True, samesite="lax", secure=IS_PRODUCTION)
     return response
 
 

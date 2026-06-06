@@ -1,12 +1,15 @@
 {% extends "base.html" %}
 {% set page_title = "Allocations" %}
-{% set page_subtitle = "" %}
+{% set page_subtitle = "Assignment, approval, policy review, and employee signing in one workspace." %}
 {% block content %}
 <div class="stack">
   {% if current_user.role in ["hardware_admin", "super_admin"] %}
   <section class="surface">
     <div class="section-head">
-      <h3>New Allocation</h3>
+      <div>
+        <h3>Create Allocation</h3>
+        <div class="help">Submit a new asset allocation for HR review and employee signature.</div>
+      </div>
     </div>
     <form method="post" class="form-grid">
       <label>Asset
@@ -15,27 +18,33 @@
       <label>Employee
         <select name="employee_id">{% for employee in employees %}<option value="{{ employee.id }}">{{ employee.full_name }}</option>{% endfor %}</select>
       </label>
-      <label style="grid-column: 1 / -1;">Remarks <textarea name="remarks"></textarea></label>
-      <div class="actions" style="grid-column: 1 / -1;"><button class="btn primary" type="submit">Submit</button></div>
+      <label style="grid-column: 1 / -1;">Remarks <textarea name="remarks" placeholder="Allocation notes, context, or handover conditions"></textarea></label>
+      <div class="actions" style="grid-column: 1 / -1;"><button class="btn primary" type="submit">Submit Allocation</button></div>
     </form>
   </section>
   {% endif %}
 
   {% if current_user.role == "employee" and policy_sample_available %}
-  <section class="surface">
+  <section class="surface policy-callout">
     <div class="section-head">
-      <h3>Policy and Agreement</h3>
+      <div>
+        <h3>Policy and Agreement</h3>
+        <div class="help">Review the approved policy before OTP signing.</div>
+      </div>
       <div class="actions">
-        <a class="btn secondary" href="/policy/reader" target="_blank">Reader</a>
-        <a class="btn secondary" href="{{ policy_sample_url }}" target="_blank">PDF</a>
+        <a class="btn secondary" href="/policy/reader" target="_blank">Open Reader</a>
+        <a class="btn ghost" href="{{ policy_sample_url }}" target="_blank">Open PDF</a>
       </div>
     </div>
     {% if active_policy %}
-    <div class="help" style="margin-bottom: 14px;">{{ active_policy.title }} - Version {{ active_policy.version }}</div>
+    <div class="help" style="margin-bottom: 14px;">{{ active_policy.title }} | Version {{ active_policy.version }}</div>
     {% endif %}
-    <div class="stack" style="gap: 10px;">
+    <div class="policy-term-grid">
       {% for item in policy_terms %}
-      <div class="help">{{ loop.index }}. {{ item }}</div>
+      <div class="policy-term-card">
+        <span class="policy-term-index">{{ "%02d"|format(loop.index) }}</span>
+        <div>{{ item }}</div>
+      </div>
       {% endfor %}
     </div>
   </section>
@@ -43,11 +52,14 @@
 
   <section class="surface">
     <div class="section-head">
-      <h3>Allocation Register</h3>
+      <div>
+        <h3>Allocation Register</h3>
+        <div class="help">Track approval status, policy access, and employee signing actions.</div>
+      </div>
       <div class="toolbar">
-        <input class="search-box" data-table-search="allocations-table" placeholder="Search">
+        <input class="search-box" data-table-search="allocations-table" placeholder="Search assets or employees">
         <select data-table-status="allocations-table">
-          <option value="">All</option>
+          <option value="">All Statuses</option>
           <option value="submitted">Submitted</option>
           <option value="pending_signature">Pending signature</option>
           <option value="signed">Signed</option>
@@ -64,22 +76,22 @@
           <tr data-status="{{ item.status }}">
             <td>{{ item.asset.asset_code }}<br><span class="help">{{ item.asset.name }}</span></td>
             <td>{{ item.employee.full_name }}</td>
-            <td><span class="badge {% if item.status == 'signed' %}success{% elif item.status == 'sent_back' %}danger{% elif item.status == 'rejected' %}danger{% else %}warning{% endif %}">{{ item.status }}</span></td>
-            <td>
+            <td><span class="badge {% if item.status == 'signed' %}success{% elif item.status in ['sent_back', 'rejected'] %}danger{% else %}warning{% endif %}">{{ item.status.replace("_", " ").title() }}</span></td>
+            <td class="table-actions">
               {% if current_user.role in ["hr_admin", "super_admin"] and item.status in ["submitted", "sent_back"] %}
-              <a class="btn ghost" href="/allocations/{{ item.id }}/decision">📋 Decide</a>
-              {% elif current_user.role == "employee" and item.status == "pending_signature" %}
-              <a class="btn primary" href="/allocations/{{ item.id }}/sign">✍ Sign</a>
-              <a class="btn ghost" href="/policy/reader?allocation_id={{ item.id }}" target="_blank">📖 Agreement</a>
+              <a class="btn ghost" href="/allocations/{{ item.id }}/decision">Review</a>
+              {% elif item.employee_id == current_user.id and item.status == "pending_signature" %}
+              <a class="btn primary" href="/allocations/{{ item.id }}/sign">Sign Now</a>
+              <a class="btn ghost" href="/policy/reader?allocation_id={{ item.id }}" target="_blank">Read Agreement</a>
               {% elif item.status == "signed" %}
               {% set doc = document_map.get(item.id) %}
               {% if doc %}
-              <a class="btn ghost" href="/documents/{{ doc.id }}/view">👁 View</a>
+              <a class="btn ghost" href="/documents/{{ doc.id }}/view">View Document</a>
               {% else %}
-              <span class="help">✓ Signed</span>
+              <span class="help">Signed</span>
               {% endif %}
               {% else %}
-              <span class="help">-</span>
+              <span class="help">No action</span>
               {% endif %}
             </td>
           </tr>
@@ -90,7 +102,7 @@
       </table>
     </div>
     {% if demo_otp_mode %}
-    <div class="panel-note" style="margin-top: 14px;">Demo OTP mode is enabled.</div>
+    <div class="panel-note" style="margin-top: 14px;">Demo OTP mode is enabled for employee signing flows.</div>
     {% endif %}
   </section>
 </div>

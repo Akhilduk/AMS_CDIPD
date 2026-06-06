@@ -1,25 +1,81 @@
 {% extends "base.html" %}
 {% set page_title = "Dashboard" %}
-{% set page_subtitle = "" %}
+{% set page_subtitle = "Role-aware operations, queues, and analytics." %}
 {% macro status_badge(value) %}<span class="status {{ (value|string|lower).replace(' ', '_') }}">{{ (value|string).replace('_', ' ').title() }}</span>{% endmacro %}
 {% block content %}
-<div class="stack">
-  <div class="summary-grid">
+<div class="stack dashboard-stack dashboard-stack-compact">
+  <section class="surface dashboard-command">
+    <div class="dashboard-command-main">
+      <div class="kicker">Command Center</div>
+      <h2>{{ dashboard_role.replace("_", " ").title() }} Dashboard</h2>
+      <p class="help">Current queues, quick actions, and live operational indicators for the assigned workspace.</p>
+    </div>
+    <div class="dashboard-command-actions">
+      {% if dashboard_role == "employee" %}
+      <a class="btn primary" href="/allocations">My Allocations</a>
+      <a class="btn secondary" href="/documents">Documents</a>
+      <a class="btn secondary" href="/travel">Travel</a>
+      {% elif dashboard_role == "hardware_admin" %}
+      <a class="btn primary" href="/assets">Inventory</a>
+      <a class="btn secondary" href="/maintenance">Maintenance</a>
+      <a class="btn secondary" href="/verification">Verification</a>
+      {% elif dashboard_role == "hr_admin" %}
+      <a class="btn primary" href="/allocations">Approvals</a>
+      <a class="btn secondary" href="/returns">Returns</a>
+      <a class="btn secondary" href="/policies">Policies</a>
+      {% elif dashboard_role == "director" %}
+      <a class="btn primary" href="/management/reports">Management</a>
+      <a class="btn secondary" href="/travel">Abroad Requests</a>
+      <a class="btn secondary" href="/reports">Reports</a>
+      {% elif dashboard_role == "auditor" %}
+      <a class="btn primary" href="/documents">Documents</a>
+      <a class="btn secondary" href="/reports">Analytics</a>
+      <a class="btn secondary" href="/verification">Verification</a>
+      {% else %}
+      <a class="btn primary" href="/users">Users</a>
+      <a class="btn secondary" href="/policies">Policies</a>
+      <a class="btn secondary" href="/reports">Reports</a>
+      {% endif %}
+    </div>
+  </section>
+
+  <div class="summary-grid dashboard-summary-grid dashboard-summary-grid-compact">
     {% for card in cards %}
-    <div class="summary-tile">
-      {% if card.href %}<a href="{{ card.href }}" style="display:block;">{% endif %}
+    <a class="summary-tile dashboard-summary-tile dashboard-summary-tile-compact" href="{{ card.href or '#' }}">
       <div class="kicker">{{ card.label }}</div>
       <div class="main">{{ card.value }}</div>
-      {% if card.href %}</a>{% endif %}
-    </div>
+      <div class="sub">Open module</div>
+    </a>
     {% endfor %}
   </div>
+
+  {% if cards %}
+  <section class="surface analytics-panel analytics-panel-compact">
+    <div class="section-head">
+      <div>
+        <h3>Operational Mix</h3>
+        <div class="help">Relative volume across the visible dashboard KPIs.</div>
+      </div>
+    </div>
+    <div class="metric-bars metric-bars-compact" data-metric-bars>
+      {% for card in cards %}
+      <div class="metric-bar" data-value="{{ card.value if card.value is number else 0 }}">
+        <div class="metric-bar-head">
+          <span>{{ card.label }}</span>
+          <strong>{{ card.value }}</strong>
+        </div>
+        <div class="metric-bar-track"><span class="metric-bar-fill"></span></div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
 
   {% if dashboard_role == "employee" %}
   <section class="surface">
     <div class="section-head">
       <h3>My Allocations</h3>
-      <a class="btn secondary" href="/allocations">Open</a>
+      <a class="btn secondary" href="/allocations">Open Register</a>
     </div>
     <div class="table-wrap">
       <table>
@@ -31,7 +87,7 @@
             <td>{{ status_badge(item.status) }}</td>
             <td>
               {% if item.status == "pending_signature" %}
-              <a href="/allocations">Sign</a>
+              <a class="btn primary" href="/allocations/{{ item.id }}/sign">Sign Allocation</a>
               {% else %}
               <span class="help">Complete</span>
               {% endif %}
@@ -48,7 +104,7 @@
   <section class="surface">
     <div class="section-head">
       <h3>My Documents</h3>
-      <a class="btn secondary" href="/documents">Open</a>
+      <a class="btn secondary" href="/documents">Open Repository</a>
     </div>
     <div class="table-wrap">
       <table>
@@ -57,8 +113,8 @@
           {% for item in documents %}
           <tr>
             <td>{{ item.document_number }}</td>
-            <td>{{ item.allocation.asset.asset_code }}</td>
-            <td><a href="/documents/{{ item.id }}/view">View</a></td>
+            <td>{{ item.asset.asset_code if item.asset else (item.allocation.asset.asset_code if item.allocation and item.allocation.asset else "-") }}</td>
+            <td><a class="btn ghost" href="/documents/{{ item.id }}/view">View</a></td>
           </tr>
           {% else %}
           <tr><td colspan="3"><div class="empty-state">No signed documents available.</div></td></tr>
@@ -82,7 +138,7 @@
           <tr>
             <td>{{ item.asset_code }} - {{ item.name }}</td>
             <td>{{ status_badge(item.status) }}</td>
-            <td><a href="/assets/{{ item.id }}/history">View</a></td>
+            <td><a class="btn ghost" href="/assets/{{ item.id }}/history">View</a></td>
           </tr>
           {% else %}
           <tr><td colspan="3"><div class="empty-state">No inventory records available.</div></td></tr>
@@ -123,16 +179,17 @@
     </div>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Asset</th><th>Employee</th><th>Status</th></tr></thead>
+        <thead><tr><th>Asset</th><th>Employee</th><th>Status</th><th>Action</th></tr></thead>
         <tbody>
           {% for item in primary_rows %}
           <tr>
             <td>{{ item.asset.asset_code }}</td>
             <td>{{ item.employee.full_name }}</td>
             <td>{{ status_badge(item.status) }}</td>
+            <td><a class="btn ghost" href="/allocations/{{ item.id }}/decision">Review</a></td>
           </tr>
           {% else %}
-          <tr><td colspan="3"><div class="empty-state">No approval items pending.</div></td></tr>
+          <tr><td colspan="4"><div class="empty-state">No approval items pending.</div></td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -199,7 +256,7 @@
           <tr>
             <td>{{ item.asset_code }} - {{ item.name }}</td>
             <td>{{ status_badge(item.status) }}</td>
-            <td><a href="/assets/{{ item.id }}/history">View</a></td>
+            <td><a class="btn ghost" href="/assets/{{ item.id }}/history">View</a></td>
           </tr>
           {% else %}
           <tr><td colspan="3"><div class="empty-state">No risk assets available.</div></td></tr>
@@ -222,8 +279,8 @@
           {% for item in primary_rows %}
           <tr>
             <td>{{ item.document_number }}</td>
-            <td>{{ item.allocation.asset.asset_code }}</td>
-            <td><a href="/documents/{{ item.id }}/view">View</a></td>
+            <td>{{ item.asset.asset_code if item.asset else (item.allocation.asset.asset_code if item.allocation and item.allocation.asset else "-") }}</td>
+            <td><a class="btn ghost" href="/documents/{{ item.id }}/view">View</a></td>
           </tr>
           {% else %}
           <tr><td colspan="3"><div class="empty-state">No signed documents available.</div></td></tr>
@@ -295,35 +352,17 @@
     </div>
   </section>
   {% endif %}
-
-  <section class="surface">
-    <div class="section-head">
-      <h3>Recent Activity</h3>
-      {% if current_user.role in ["super_admin", "hardware_admin", "auditor"] %}
-      <a class="btn secondary" href="/audit">Audit</a>
-      {% elif current_user.role == "director" %}
-      <a class="btn secondary" href="/management/reports">Management</a>
-      {% else %}
-      <a class="btn secondary" href="/reports">Reports</a>
-      {% endif %}
-    </div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Module</th><th>Action</th><th>Actor</th><th>Reference</th></tr></thead>
-        <tbody>
-          {% for item in recent_logs %}
-          <tr>
-            <td>{{ item.module }}</td>
-            <td>{{ item.action }}</td>
-            <td>{{ item.actor_name }}</td>
-            <td class="mono">{{ item.reference_id }}</td>
-          </tr>
-          {% else %}
-          <tr><td colspan="4"><div class="empty-state">No activity yet.</div></td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </section>
 </div>
+
+<script>
+  (function () {
+    const bars = Array.from(document.querySelectorAll("[data-metric-bars] .metric-bar"));
+    if (!bars.length) return;
+    const max = Math.max.apply(null, bars.map((node) => Number(node.getAttribute("data-value")) || 0)) || 1;
+    bars.forEach((node) => {
+      const value = Number(node.getAttribute("data-value")) || 0;
+      node.style.setProperty("--metric-scale", String(Math.max(10, Math.round((value / max) * 100))));
+    });
+  })();
+</script>
 {% endblock %}

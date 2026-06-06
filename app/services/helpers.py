@@ -1,16 +1,26 @@
 
 POLICY_META = {
-    "title": "CDIPD Asset Usage Policy",
+    "title": "Employee Asset Usage Policy",
+    "document_code": "CDIPD_HR_03",
+    "format_id": "CDIPD_HR_03_Asset_Usage_Policy",
     "version": "1.0",
-    "owner": "hr_admin"
+    "owner": "hr_admin",
+    "org_name": "Kerala University of Digital Sciences, Innovation and Technology",
+    "unit_name": "Centre for Digital Innovation and Product Development (CDIPD)",
+    "unit_note": "A CMMI Level 3 Certified Independent Centre of Excellence",
+    "release_date": "2026-02-10",
+    "disclaimer": "This document contains confidential information intended for CDIPD use only. Unauthorised disclosure, copying, distribution, or reliance is prohibited.",
 }
 
 POLICY_TERMS = [
-    "I understand that CDIPD assets remain the property of CDIPD/DUK and must be used only for official purposes.",
-    "I agree to comply with the acceptable use guidelines.",
-    "I understand that unauthorized software installation is prohibited.",
-    "I acknowledge responsibility for the physical security of the asset.",
-    "I understand that loss or damage may result in recovery of liability as per organizational policy."
+    "CDIPD assets remain the property of CDIPD or DUK and may be used only for authorised official work.",
+    "Employees are personally responsible for physical security and data security of issued laptops, desktops, tablets, mobiles, and accessories.",
+    "Loss, theft, damage, negligence, misuse, or unauthorised repair can trigger recovery of cost and disciplinary action.",
+    "Assets must not be left unattended in public places, vehicles, homes, hotels, or offices without secure storage and access protection.",
+    "Unauthorised software, accessories, external repair attempts, and credential sharing are prohibited.",
+    "Employees travelling outside India with CDIPD assets require prior approval and must comply with return and verification obligations.",
+    "All assigned assets, accessories, and related no-dues obligations must be completed during exit, role change, or reallocation.",
+    "No asset should be issued without a signed asset agreement linked to the approved policy version."
 ]
 
 
@@ -204,6 +214,7 @@ DEFAULT_ROLE_PERMISSIONS = {
     },
     "employee": {
         ("assets", "view"),
+        ("allocation", "view"),
         ("signing", "view"),
         ("signing", "sign"),
         ("tickets", "view"),
@@ -303,6 +314,28 @@ def user_has_permission(user: Optional[User], module: str, action: str) -> bool:
     if "super_admin" in role_codes:
         return True
     return False
+
+
+ROLE_DASHBOARD_PRIORITY = [
+    "super_admin",
+    "hr_admin",
+    "hardware_admin",
+    "director",
+    "auditor",
+    "employee",
+]
+
+
+def resolve_dashboard_role(user: Optional[User]) -> str:
+    if not user:
+        return "guest"
+    roles = set(get_user_roles(user))
+    if user.role and user.role in roles:
+        return user.role
+    for role in ROLE_DASHBOARD_PRIORITY:
+        if role in roles:
+            return role
+    return user.role or "guest"
 
 
 def require_user(request: Request, db: Session = Depends(get_db)) -> User:
@@ -799,16 +832,17 @@ def get_current_holder(asset: Asset, db: Session) -> str:
 
 
 def build_role_dashboard(db: Session, user: User) -> dict:
+    dashboard_role = resolve_dashboard_role(user)
     base = {
-        "dashboard_role": user.role,
+        "dashboard_role": dashboard_role,
         "cards": [],
         "primary_rows": [],
         "secondary_rows": [],
         "documents": [],
-        "recent_logs": db.scalars(select(AuditLog).order_by(AuditLog.created_at.desc()).limit(6)).all(),
+        "recent_logs": [],
     }
 
-    if user.role == "employee":
+    if dashboard_role == "employee":
         allocations = db.scalars(select(Allocation).where(Allocation.employee_id == user.id).order_by(Allocation.created_at.desc())).all()
         tickets = db.scalars(select(MaintenanceTicket).where(MaintenanceTicket.raised_by_id == user.id).order_by(MaintenanceTicket.created_at.desc())).all()
         travel_requests = db.scalars(select(TravelRequest).where(TravelRequest.employee_id == user.id).order_by(TravelRequest.created_at.desc())).all()
@@ -828,7 +862,7 @@ def build_role_dashboard(db: Session, user: User) -> dict:
         base["return_requests"] = returns[:6]
         return base
 
-    if user.role == "hardware_admin":
+    if dashboard_role == "hardware_admin":
         assets = db.scalars(select(Asset).order_by(Asset.created_at.desc())).all()
         tickets = db.scalars(select(MaintenanceTicket).order_by(MaintenanceTicket.created_at.desc())).all()
         returns = db.scalars(select(ReturnRequest).order_by(ReturnRequest.created_at.desc())).all()
@@ -852,7 +886,7 @@ def build_role_dashboard(db: Session, user: User) -> dict:
         base["return_requests"] = returns[:6]
         return base
 
-    if user.role == "hr_admin":
+    if dashboard_role == "hr_admin":
         allocations = db.scalars(select(Allocation).order_by(Allocation.created_at.desc())).all()
         returns = db.scalars(select(ReturnRequest).order_by(ReturnRequest.created_at.desc())).all()
         policies = db.scalars(select(PolicyVersion).order_by(PolicyVersion.created_at.desc())).all()
@@ -871,7 +905,7 @@ def build_role_dashboard(db: Session, user: User) -> dict:
         base["policies"] = policies[:6]
         return base
 
-    if user.role == "director":
+    if dashboard_role == "director":
         travel_requests = db.scalars(select(TravelRequest).order_by(TravelRequest.created_at.desc())).all()
         assets = db.scalars(select(Asset)).all()
         tickets = db.scalars(select(MaintenanceTicket)).all()
@@ -893,12 +927,11 @@ def build_role_dashboard(db: Session, user: User) -> dict:
         base["secondary_rows"] = [asset for asset in assets if asset.status in ["available", "under_maintenance"]][:8]
         return base
 
-    if user.role == "auditor":
+    if dashboard_role == "auditor":
         allocations = db.scalars(select(Allocation).order_by(Allocation.created_at.desc())).all()
         documents = db.scalars(select(SignedDocument).order_by(SignedDocument.created_at.desc())).all()
         verifications = db.scalars(select(AuditVerification).order_by(AuditVerification.created_at.desc())).all()
         verification_campaigns = db.scalars(select(VerificationCampaign).order_by(VerificationCampaign.created_at.desc())).all()
-        logs = db.scalars(select(AuditLog).order_by(AuditLog.created_at.desc()).limit(12)).all()
         base["cards"] = [
             {"label": "Unsigned", "value": sum(1 for item in allocations if item.status == "pending_signature"), "href": "/allocations"},
             {"label": "Signed Docs", "value": len(documents), "href": "/reports/drilldown/documents_signed"},
@@ -908,7 +941,6 @@ def build_role_dashboard(db: Session, user: User) -> dict:
         ]
         base["primary_rows"] = documents[:8]
         base["secondary_rows"] = verifications[:8]
-        base["recent_logs"] = logs
         return base
 
     users_count = db.scalar(select(func.count(User.id))) or 0
@@ -1041,6 +1073,29 @@ def extract_policy_sections() -> list[dict]:
     full_text = "\n".join(text_chunks)
     lines = [re.sub(r"\s+", " ", line).strip() for line in full_text.splitlines()]
     lines = [line for line in lines if line]
+    skip_patterns = [
+        re.compile(r"^CDIPD \| .*Page \d+ of \d+$", re.IGNORECASE),
+        re.compile(r"^CDIPD \| Asset Usage Policy \| CDIPD_HR_03$", re.IGNORECASE),
+        re.compile(r"^CDIPD \| HR \| Confidential \| Asset Usage Policy \| Page \d+ of \d+$", re.IGNORECASE),
+        re.compile(r"^Format ID CDIPD_HR_03_Asset_Usage_Policy$", re.IGNORECASE),
+        re.compile(r"^Contents$", re.IGNORECASE),
+        re.compile(r"^\d+\.\s+.+\.+\s+\d+$"),
+        re.compile(r"^Page \d+ of \d+$", re.IGNORECASE),
+    ]
+    cleaned_lines: list[str] = []
+    for line in lines:
+        if any(pattern.match(line) for pattern in skip_patterns):
+            continue
+        if line in {
+            "KERALA UNIVERSITY OF DIGITAL SCIENCES, INNOVATION AND TECHNOLOGY",
+            "CENTRE FOR DIGITAL INNOVATION AND PRODUCT DEVELOPMENT",
+            "(DIGITAL UNIVERSITY KERALA)",
+            "(CDIPD)",
+            "(A CMMI Level 3 Certified Independent Centre of Excellence)",
+        }:
+            continue
+        cleaned_lines.append(line)
+    lines = cleaned_lines
     sections: list[dict] = []
     current_title = "Overview"
     current_lines: list[str] = []
@@ -1049,13 +1104,27 @@ def extract_policy_sections() -> list[dict]:
     for line in lines:
         if heading_pattern.match(line) or (uppercase_pattern.match(line) and len(line.split()) <= 10):
             if current_lines:
-                sections.append({"title": current_title, "paragraphs": current_lines[:12]})
+                paragraphs: list[str] = []
+                bullets: list[str] = []
+                for item in current_lines:
+                    if item.startswith("•"):
+                        bullets.append(item.lstrip("•").strip())
+                    else:
+                        paragraphs.append(item)
+                sections.append({"title": current_title, "paragraphs": paragraphs[:8], "bullets": bullets[:12]})
             current_title = line
             current_lines = []
         else:
             current_lines.append(line)
     if current_lines:
-        sections.append({"title": current_title, "paragraphs": current_lines[:12]})
+        paragraphs = []
+        bullets = []
+        for item in current_lines:
+            if item.startswith("•"):
+                bullets.append(item.lstrip("•").strip())
+            else:
+                paragraphs.append(item)
+        sections.append({"title": current_title, "paragraphs": paragraphs[:8], "bullets": bullets[:12]})
     return sections[:16]
 
 

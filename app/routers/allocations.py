@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import OTP_RESEND_COOLDOWN_SECONDS, STORAGE_DIR
 from app.models.models import Allocation, Asset, AuditLog, OTPChallenge, PolicyVersion, SignedDocument, User, Notification
-from app.services.helpers import POLICY_TERMS, DEMO_OTP_MODE, build_otp_state, create_notification, ensure_signed_document_templates, ensure_workflow_documents, get_current_user, get_db, log_event, redirect_with_flash, render, require_permission, require_roles, require_user, user_has_permission
+from app.services.helpers import POLICY_TERMS, DEMO_OTP_MODE, build_otp_state, create_notification, create_signed_document_record, ensure_signed_document_templates, ensure_workflow_documents, get_current_user, get_db, log_event, redirect_with_flash, render, require_permission, require_roles, require_user, user_has_permission, user_has_role
 from app.services.workflows import ALLOCATION_TRANSITIONS, ASSET_TRANSITIONS, TransitionError, apply_transition, ensure_transition
 
 router = APIRouter()
@@ -21,7 +21,7 @@ router = APIRouter()
 async def allocations_page(request: Request, db: Session = Depends(get_db)):
     current_user = get_current_user(request, db)
     query = select(Allocation).order_by(Allocation.created_at.desc())
-    if current_user.role == "employee":
+    if user_has_role(current_user, "employee") and not user_has_role(current_user, "hr_admin", "hardware_admin", "super_admin", "director", "auditor"):
         query = query.where(Allocation.employee_id == current_user.id)
     allocations = db.scalars(query).all()
     assets = db.scalars(select(Asset).where(Asset.status.in_(["available", "active", "under_maintenance"]))).all()
@@ -180,11 +180,12 @@ async def send_otp(
         .where(OTPChallenge.allocation_id == allocation.id)
         .order_by(OTPChallenge.created_at.desc())
     )
+    return_path = f"/allocations/{allocation.id}/sign" if current_user.role == "employee" else "/allocations"
     if latest_challenge:
         resend_at = latest_challenge.created_at + timedelta(seconds=OTP_RESEND_COOLDOWN_SECONDS)
         remaining = int((resend_at - datetime.utcnow()).total_seconds())
         if remaining > 0:
-            return redirect_with_flash("/allocations", f"Please wait {remaining} seconds before requesting another OTP.", "warning")
+            return redirect_with_flash(return_path, f"Please wait {remaining} seconds before requesting another OTP.", "warning")
     otp_code = f"{secrets.randbelow(1000000):06d}"
     db.add(OTPChallenge(allocation_id=allocation.id, otp_code=otp_code, expires_at=datetime.utcnow() + timedelta(minutes=10)))
     db.commit()
@@ -192,7 +193,7 @@ async def send_otp(
     message = f"OTP generated for allocation #{allocation.id}."
     if DEMO_OTP_MODE:
         message += f" Demo OTP: {otp_code}"
-    return redirect_with_flash("/allocations", message)
+    return redirect_with_flash(return_path, message)
 
 @router.get("/allocations/{allocation_id}/sign", response_class=HTMLResponse)
 @require_roles("employee")
@@ -236,14 +237,14 @@ async def sign_allocation(
         .order_by(OTPChallenge.created_at.desc())
     )
     if not challenge or challenge.expires_at < datetime.utcnow() or challenge.otp_code != otp_code:
-        return redirect_with_flash("/allocations", "OTP is invalid or expired. Generate a new code and try again.", "error")
+        return redirect_with_flash(f"/allocations/{allocation.id}/sign", "OTP is invalid or expired. Generate a new code and try again.", "error")
     challenge.consumed = True
     old_status = allocation.status
     try:
         apply_transition(allocation, "status", "signed", ALLOCATION_TRANSITIONS, "allocation")
         apply_transition(allocation.asset, "status", "active", ASSET_TRANSITIONS, "asset")
     except TransitionError as exc:
-        return redirect_with_flash("/allocations", str(exc), "error")
+        return redirect_with_flash(f"/allocations/{allocation.id}/sign", str(exc), "error")
     document = create_signed_document_record(db, allocation, otp_code, current_user.full_name)
     for user in db.scalars(select(User).where(User.role.in_(["hr_admin", "hardware_admin"]), User.active == True)).all():
         create_notification(

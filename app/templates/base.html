@@ -31,7 +31,7 @@
             <div class="sidebar-group-title">{{ group.label }}</div>
             {% for item in group["items"] %}
             <a class="nav-item {% if active_path == item.path or active_path.startswith(item.path ~ '/') %}active{% endif %}" href="{{ item.path }}">
-              <span class="nav-icon" aria-hidden="true">{{ item.icon }}</span>
+              <span class="nav-icon" aria-hidden="true">{{ nav_icon(item.icon)|safe }}</span>
               <span>{{ item.label }}</span>
             </a>
             {% endfor %}
@@ -113,7 +113,7 @@
               <span class="header-icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"></path></svg>
               </span>
-              <span>Theme: Auto</span>
+                <span data-theme-label>Theme: Auto</span>
             </button>
             </div>
             </div>
@@ -123,7 +123,7 @@
                 <span class="header-icon" aria-hidden="true">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"></path></svg>
                 </span>
-                <span>Theme: Auto</span>
+              <span data-theme-label>Theme: Auto</span>
               </button>
             </div>
             {% endif %}
@@ -171,7 +171,8 @@
         }
         if (button) {
           const label = value.charAt(0).toUpperCase() + value.slice(1);
-          button.textContent = "Theme: " + label;
+          const labelNode = button.querySelector("[data-theme-label]") || button.querySelector("span:last-child");
+          if (labelNode) labelNode.textContent = "Theme: " + label;
         }
       };
       let current = localStorage.getItem(key) || "auto";

@@ -69,6 +69,59 @@ auth_adapter = get_auth_adapter()
 
 templates = Jinja2Templates(directory=str(BASE_DIR / "app/templates"))
 
+# --- Sidebar navigation icons (consistent 18px stroke SVG set) ---
+_ICON_PATHS = {
+    "dashboard": '<rect x="3" y="3" width="7" height="9" rx="1"></rect><rect x="14" y="3" width="7" height="5" rx="1"></rect><rect x="14" y="12" width="7" height="9" rx="1"></rect><rect x="3" y="16" width="7" height="5" rx="1"></rect>',
+    "inventory": '<path d="M21 8 12 3 3 8v8l9 5 9-5Z"></path><path d="m3 8 9 5 9-5"></path><path d="M12 13v8"></path>',
+    "allocations": '<path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2Z"></path><path d="M9 13h6"></path><path d="M9 17h4"></path>',
+    "backup": '<path d="M12 3 4 6v6c0 4.5 3.2 7.8 8 9 4.8-1.2 8-4.5 8-9V6Z"></path><path d="m9 12 2 2 4-4"></path>',
+    "returns": '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path><path d="M3 3v5h5"></path>',
+    "maintenance": '<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.5-.6-.6-2.5Z"></path>',
+    "repairs": '<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.5-.6-.6-2.5Z"></path>',
+    "replacement": '<path d="M17 2 21 6l-4 4"></path><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><path d="M7 22 3 18l4-4"></path><path d="M21 13v2a4 4 0 0 1-4 4H3"></path>',
+    "verification": '<path d="M9 12l2 2 4-4"></path><circle cx="12" cy="12" r="9"></circle>',
+    "scanner": '<path d="M3 7V5a2 2 0 0 1 2-2h2"></path><path d="M17 3h2a2 2 0 0 1 2 2v2"></path><path d="M21 17v2a2 2 0 0 1-2 2h-2"></path><path d="M7 21H5a2 2 0 0 1-2-2v-2"></path><path d="M3 12h18"></path>',
+    "policies": '<path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2Z"></path>',
+    "documents": '<path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2Z"></path><path d="M9 13h6"></path><path d="M9 17h6"></path>',
+    "audit": '<path d="M9 11l3 3 8-8"></path><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"></path>',
+    "reports": '<path d="M3 3v18h18"></path><rect x="7" y="11" width="3" height="6"></rect><rect x="12" y="7" width="3" height="10"></rect><rect x="17" y="13" width="3" height="4"></rect>',
+    "roles": '<path d="M12 3 4 6v6c0 4.5 3.2 7.8 8 9 4.8-1.2 8-4.5 8-9V6Z"></path>',
+    "permissions": '<rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path>',
+    "jobs": '<circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path>',
+    "recovery": '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path><path d="M3 3v5h5"></path>',
+    "email": '<rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m3 7 9 6 9-6"></path>',
+    "delivery": '<path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"></path><path d="M14 9h4l3 3v5a1 1 0 0 1-1 1h-2"></path><circle cx="7.5" cy="18.5" r="1.5"></circle><circle cx="16.5" cy="18.5" r="1.5"></circle>',
+    "deviations": '<path d="M10.3 3.9 2 18a1 1 0 0 0 .9 1.5h18.2A1 1 0 0 0 22 18L13.7 3.9a2 2 0 0 0-3.4 0Z"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path>',
+    "requests": '<path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2Z"></path><path d="M12 11v6"></path><path d="M9 14h6"></path>',
+    "travel": '<circle cx="12" cy="12" r="9"></circle><path d="M3 12h18"></path><path d="M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18Z"></path>',
+    "procurement": '<circle cx="9" cy="20" r="1.5"></circle><circle cx="18" cy="20" r="1.5"></circle><path d="M2 3h3l2.5 13h11l2-8H6.5"></path>',
+    "liabilities": '<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1"></rect>',
+    "notifications": '<path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10 21a2 2 0 0 0 4 0"></path>',
+}
+# Map legacy emoji values to semantic icon keys so templates keep working.
+_EMOJI_ICON_MAP = {
+    "📊": "dashboard", "🗃️": "inventory", "🧾": "allocations", "🛡️": "backup",
+    "🔄": "returns", "🛠️": "maintenance", "🔧": "repairs", "🔁": "replacement",
+    "✅": "verification", "🔍": "scanner", "📜": "policies", "📝": "documents",
+    "📈": "reports", "🔐": "permissions", "⏱️": "jobs", "♻️": "recovery",
+    "✉️": "email", "📨": "delivery", "⚠️": "deviations", "📁": "documents",
+    "📑": "documents", "💼": "liabilities", "🌍": "travel", "🔔": "notifications",
+}
+
+
+def nav_icon(key: str) -> str:
+    """Return inline SVG markup for a sidebar icon key (or legacy emoji)."""
+    resolved = _EMOJI_ICON_MAP.get(key, key)
+    paths = _ICON_PATHS.get(resolved) or _ICON_PATHS["dashboard"]
+    return (
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+        'stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'
+        f"{paths}</svg>"
+    )
+
+
+templates.env.globals["nav_icon"] = nav_icon
+
 MODULE_PERMISSION_ACTIONS = ["view", "create", "edit", "delete", "approve", "reject", "export", "download", "print", "scan", "sign"]
 PERMISSION_MODULES = [
     "users",

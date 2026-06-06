@@ -25,6 +25,10 @@ class User(Base):
     multiple_roles_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
     failed_login_attempts: Mapped[int] = mapped_column(Integer, default=0)
     last_login: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    is_deleted: Mapped[bool] = mapped_column(Boolean, default=False)
+    deleted_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    deleted_by: Mapped[str] = mapped_column(String(120), default="")
+    delete_reason: Mapped[str] = mapped_column(Text, default="")
 
     user_roles: Mapped[list["UserRole"]] = relationship(back_populates="user", cascade="all, delete-orphan")
     notifications: Mapped[list["Notification"]] = relationship(back_populates="user", cascade="all, delete-orphan")
@@ -40,6 +44,10 @@ class Role(Base):
     description: Mapped[str] = mapped_column(Text, default="")
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    is_deleted: Mapped[bool] = mapped_column(Boolean, default=False)
+    deleted_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    deleted_by: Mapped[str] = mapped_column(String(120), default="")
+    delete_reason: Mapped[str] = mapped_column(Text, default="")
 
     user_roles: Mapped[list["UserRole"]] = relationship(back_populates="role", cascade="all, delete-orphan")
     role_permissions: Mapped[list["RolePermission"]] = relationship(back_populates="role", cascade="all, delete-orphan")
@@ -94,6 +102,10 @@ class Category(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(80), unique=True)
+    is_deleted: Mapped[bool] = mapped_column(Boolean, default=False)
+    deleted_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    deleted_by: Mapped[str] = mapped_column(String(120), default="")
+    delete_reason: Mapped[str] = mapped_column(Text, default="")
 
 
 class Vendor(Base):
@@ -101,6 +113,10 @@ class Vendor(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(80), unique=True)
+    is_deleted: Mapped[bool] = mapped_column(Boolean, default=False)
+    deleted_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    deleted_by: Mapped[str] = mapped_column(String(120), default="")
+    delete_reason: Mapped[str] = mapped_column(Text, default="")
 
 
 class Location(Base):
@@ -108,6 +124,10 @@ class Location(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(80), unique=True)
+    is_deleted: Mapped[bool] = mapped_column(Boolean, default=False)
+    deleted_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    deleted_by: Mapped[str] = mapped_column(String(120), default="")
+    delete_reason: Mapped[str] = mapped_column(Text, default="")
 
 
 class PolicyMaster(Base):
@@ -120,6 +140,11 @@ class PolicyMaster(Base):
     owner_role: Mapped[str] = mapped_column(String(40), default="hr_admin")
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    is_deleted: Mapped[bool] = mapped_column(Boolean, default=False)
+    deleted_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    deleted_by: Mapped[str] = mapped_column(String(120), default="")
+    delete_reason: Mapped[str] = mapped_column(Text, default="")
 
     versions: Mapped[list["PolicyVersion"]] = relationship(back_populates="policy_master")
 
@@ -134,6 +159,10 @@ class PolicyTemplate(Base):
     html_content: Mapped[str] = mapped_column(Text)
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    is_deleted: Mapped[bool] = mapped_column(Boolean, default=False)
+    deleted_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    deleted_by: Mapped[str] = mapped_column(String(120), default="")
+    delete_reason: Mapped[str] = mapped_column(Text, default="")
 
 
 class PolicyVersion(Base):
@@ -149,6 +178,10 @@ class PolicyVersion(Base):
     approval_remarks: Mapped[str] = mapped_column(Text, default="")
     published: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    is_deleted: Mapped[bool] = mapped_column(Boolean, default=False)
+    deleted_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    deleted_by: Mapped[str] = mapped_column(String(120), default="")
+    delete_reason: Mapped[str] = mapped_column(Text, default="")
 
     policy_master: Mapped[Optional[PolicyMaster]] = relationship(back_populates="versions")
 
@@ -169,7 +202,12 @@ class Asset(Base):
     purchase_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
     warranty_until: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
     qr_path: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    acquisition_value: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    is_deleted: Mapped[bool] = mapped_column(Boolean, default=False)
+    deleted_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    deleted_by: Mapped[str] = mapped_column(String(120), default="")
+    delete_reason: Mapped[str] = mapped_column(Text, default="")
 
     category: Mapped[Category] = relationship()
     vendor: Mapped[Vendor] = relationship()
@@ -393,6 +431,10 @@ class DisposalRequest(Base):
     disposal_method: Mapped[str] = mapped_column(String(80), default="")
     disposal_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
     vendor_agency: Mapped[str] = mapped_column(String(120), default="")
+    committee_remarks: Mapped[str] = mapped_column(Text, default="")
+    approval_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
+    ewaste_vendor_details: Mapped[str] = mapped_column(Text, default="")
+    certificate_path: Mapped[str] = mapped_column(String(255), default="")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     asset: Mapped[Asset] = relationship()
@@ -412,6 +454,12 @@ class ProcurementPlan(Base):
     suggested_procurement: Mapped[int] = mapped_column(Integer, default=0)
     estimated_budget: Mapped[int] = mapped_column(Integer, default=0)
     reviewed: Mapped[bool] = mapped_column(Boolean, default=False)
+    workflow_status: Mapped[str] = mapped_column(String(60), default="draft_forecast")
+    approved_quantity: Mapped[int] = mapped_column(Integer, default=0)
+    approval_reason: Mapped[str] = mapped_column(Text, default="")
+    priority: Mapped[str] = mapped_column(String(40), default="medium")
+    financial_year: Mapped[str] = mapped_column(String(20), default="")
+    director_remarks: Mapped[str] = mapped_column(Text, default="")
     created_by_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
@@ -479,6 +527,8 @@ class AuditLog(Base):
     reference_id: Mapped[str] = mapped_column(String(80))
     old_value: Mapped[str] = mapped_column(Text, default="")
     new_value: Mapped[str] = mapped_column(Text, default="")
+    severity: Mapped[str] = mapped_column(String(40), default="info")
+    entity_type: Mapped[str] = mapped_column(String(80), default="")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 
@@ -494,6 +544,7 @@ class Notification(Base):
     is_read: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     read_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    delivery_status: Mapped[str] = mapped_column(String(40), default="in_app")
 
     user: Mapped[User] = relationship(back_populates="notifications")
 
@@ -521,6 +572,10 @@ class WorkflowSetting(Base):
     director_approval_required: Mapped[bool] = mapped_column(Boolean, default=False)
     return_check_required: Mapped[bool] = mapped_column(Boolean, default=True)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    is_deleted: Mapped[bool] = mapped_column(Boolean, default=False)
+    deleted_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    deleted_by: Mapped[str] = mapped_column(String(120), default="")
+    delete_reason: Mapped[str] = mapped_column(Text, default="")
 
 
 class NumberingSetting(Base):
@@ -533,6 +588,77 @@ class NumberingSetting(Base):
     return_prefix: Mapped[str] = mapped_column(String(20), default="RET")
     policy_prefix: Mapped[str] = mapped_column(String(20), default="POL")
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class NotificationTemplate(Base):
+    __tablename__ = "notification_templates"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    event_code: Mapped[str] = mapped_column(String(80), unique=True)
+    subject: Mapped[str] = mapped_column(String(200))
+    html_body: Mapped[str] = mapped_column(Text)
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_deleted: Mapped[bool] = mapped_column(Boolean, default=False)
+    deleted_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    deleted_by: Mapped[str] = mapped_column(String(120), default="")
+    delete_reason: Mapped[str] = mapped_column(Text, default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class NotificationDeliveryLog(Base):
+    __tablename__ = "notification_delivery_logs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    notification_id: Mapped[Optional[int]] = mapped_column(ForeignKey("notifications.id"), nullable=True)
+    event_code: Mapped[str] = mapped_column(String(80))
+    recipient: Mapped[str] = mapped_column(String(160))
+    channel: Mapped[str] = mapped_column(String(40), default="email")
+    status: Mapped[str] = mapped_column(String(40), default="pending")
+    error_message: Mapped[str] = mapped_column(Text, default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class ScheduledJobRun(Base):
+    __tablename__ = "scheduled_job_runs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    job_code: Mapped[str] = mapped_column(String(80))
+    status: Mapped[str] = mapped_column(String(40), default="pending")
+    message: Mapped[str] = mapped_column(Text, default="")
+    started_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    finished_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+
+
+class ComplianceDeviation(Base):
+    __tablename__ = "compliance_deviations"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    deviation_number: Mapped[str] = mapped_column(String(60), unique=True)
+    source_module: Mapped[str] = mapped_column(String(80))
+    source_reference: Mapped[str] = mapped_column(String(120), default="")
+    severity: Mapped[str] = mapped_column(String(40), default="medium")
+    responsible_person_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
+    corrective_action: Mapped[str] = mapped_column(Text, default="")
+    preventive_action: Mapped[str] = mapped_column(Text, default="")
+    due_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
+    closure_evidence: Mapped[str] = mapped_column(Text, default="")
+    status: Mapped[str] = mapped_column(String(60), default="open")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    responsible_person: Mapped[Optional[User]] = relationship()
+
+
+class DisposalCommitteeMember(Base):
+    __tablename__ = "disposal_committee_members"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    role_title: Mapped[str] = mapped_column(String(120), default="Committee Member")
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    user: Mapped[User] = relationship()
 
 ROLE_MENUS = {
     "super_admin": ["dashboard", "users", "masters", "policies", "reports", "audit", "disposal", "procurement"],

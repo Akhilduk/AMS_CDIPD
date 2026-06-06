@@ -1,0 +1,4 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="surface"><table><thead><tr><th>Event</th><th>Subject</th><th>Status</th></tr></thead><tbody>{% for item in templates %}<tr><td>{{ item.event_code }}</td><td>{{ item.subject }}</td><td><span class="badge">{{ 'active' if item.active else 'inactive' }}</span></td></tr>{% endfor %}</tbody></table></section>
+{% endblock %}

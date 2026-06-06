@@ -37,6 +37,7 @@
   </div>
 
   <script>
+    window.CDIPD_CSRF_TOKEN = {{ csrf_token|tojson }};
     (function () {
       const key = "cdipd-theme";
       const root = document.body;
@@ -62,6 +63,16 @@
           apply(current);
         });
       }
+      document.querySelectorAll("form").forEach(function (form) {
+        const method = (form.getAttribute("method") || "get").toLowerCase();
+        if (method !== "get" && !form.querySelector("input[name=csrf_token]")) {
+          const csrf = document.createElement("input");
+          csrf.type = "hidden";
+          csrf.name = "csrf_token";
+          csrf.value = window.CDIPD_CSRF_TOKEN || "";
+          form.prepend(csrf);
+        }
+      });
     })();
   </script>
 </body>

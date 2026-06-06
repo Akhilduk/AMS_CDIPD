@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - CDIPD Asset Management</title>
+  <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+  <a class="skip-link" href="#public-main">Skip to content</a>
+  <div class="public-shell">
+    <header class="public-header">
+      <div class="inner">
+        <a href="/" class="brand-row public-brand-row">
+          <div class="brand-mark" aria-hidden="true">C</div>
+          <div>
+            <div class="kicker">CDIPD Workspace</div>
+            <div class="brand public-brand-title">Asset Management</div>
+          </div>
+        </a>
+        <nav class="public-nav" aria-label="Public navigation">
+          <a class="nav-link" href="/">Home</a>
+
+          <a class="btn secondary public-nav-btn" href="/login">Log In</a>
+          <button class="btn ghost theme-toggle public-theme-toggle" type="button" data-theme-toggle>
+            <span class="header-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"></path></svg>
+            </span>
+            <span data-theme-label>Theme: Auto</span>
+          </button>
+        </nav>
+      </div>
+    </header>
+
+    <main class="public-main" id="public-main">
+
+<div class="login-shell">
+  <div class="login-showcase modern-showcase">
+    <div class="kicker">Secure Access</div>
+    <div class="title">CDIPD Asset Workspace</div>
+    <div class="subtitle">Unified operations for allocation, compliance, lifecycle, reporting, and audit.</div>
+    <div class="showcase-points">
+      <div class="showcase-point">
+        <span class="showcase-point-icon">01</span>
+        <div>
+          <strong>Single control surface</strong>
+          <div class="help">Assets, policy signing, maintenance, returns, and evidence in one flow.</div>
+        </div>
+      </div>
+      <div class="showcase-point">
+        <span class="showcase-point-icon">02</span>
+        <div>
+          <strong>Traceable approvals</strong>
+          <div class="help">Every important step is linked to roles, documents, and audit history.</div>
+        </div>
+      </div>
+      <div class="showcase-point">
+        <span class="showcase-point-icon">03</span>
+        <div>
+          <strong>Fast role-based access</strong>
+          <div class="help">Sign in with your workspace account to continue to your assigned modules.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="login-card auth-card">
+    <div class="auth-card-head">
+      <div class="kicker">Workspace Login</div>
+      <div class="title">Sign In</div>
+      <div class="subtitle">Use your assigned CDIPD account credentials.</div>
+    </div>
+
+
+
+    <form method="post" action="/login" class="auth-form">
+      <input type="hidden" name="csrf_token" value="bxcFWnFJkR1cLtJbGt7I0yqE52eiaUgRaT8gMQds4sA">
+      <div class="auth-field">
+        <label>Email Address</label>
+        <input type="email" name="email" autocomplete="username" required placeholder="name@cdipd.local">
+      </div>
+      <div class="auth-field">
+        <div class="field-row">
+          <label>Password</label>
+          <a href="/forgot-password" class="inline-link">Forgot password?</a>
+        </div>
+        <div class="password-field">
+          <input id="login-password" type="password" name="password" autocomplete="current-password" required placeholder="Enter your password">
+          <button class="password-toggle icon-password-toggle" type="button" data-password-toggle="login-password" aria-pressed="false" aria-label="Show password">
+            <span class="password-icon password-icon-show" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </span>
+            <span class="password-icon password-icon-hide" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m3 3 18 18"></path><path d="M10.6 10.7a3 3 0 0 0 4.2 4.2"></path><path d="M9.9 5.1A10.5 10.5 0 0 1 12 5c6.5 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.2"></path><path d="M6.7 6.7A17.2 17.2 0 0 0 2 12s3.5 7 10 7a9.8 9.8 0 0 0 4.1-.9"></path></svg>
+            </span>
+            <span class="sr-only">Toggle password visibility</span>
+          </button>
+        </div>
+      </div>
+      <button class="btn primary auth-submit" type="submit">Sign In</button>
+    </form>
+
+    <div class="auth-demo-panel">
+      <div class="auth-demo-title">Demo Accounts</div>
+      <div class="auth-demo-grid">
+        <div class="auth-demo-row"><span>Super Admin</span><code>superadmin@cdipd.local</code></div>
+        <div class="auth-demo-row"><span>Hardware Admin</span><code>hardware@cdipd.local</code></div>
+        <div class="auth-demo-row"><span>HR Admin</span><code>hr@cdipd.local</code></div>
+        <div class="auth-demo-row"><span>Employee</span><code>employee@cdipd.local</code></div>
+        <div class="auth-demo-row"><span>Director</span><code>director@cdipd.local</code></div>
+        <div class="auth-demo-row"><span>Auditor</span><code>auditor@cdipd.local</code></div>
+      </div>
+      <div class="auth-demo-password">Password <code>Demo@12345</code></div>
+    </div>
+  </div>
+</div>
+
+    </main>
+
+    <footer class="public-footer">
+      <div class="inner">Centre for Digital Innovation and Product Development</div>
+    </footer>
+  </div>
+
+  <script>
+    window.CDIPD_CSRF_TOKEN = "bxcFWnFJkR1cLtJbGt7I0yqE52eiaUgRaT8gMQds4sA";
+    (function () {
+      const key = "cdipd-theme";
+      const root = document.body;
+      const button = document.querySelector("[data-theme-toggle]");
+      const states = ["auto", "light", "night"];
+      const apply = (value) => {
+        if (value === "auto") {
+          root.removeAttribute("data-theme");
+        } else {
+          root.setAttribute("data-theme", value);
+        }
+        if (button) {
+          const label = value.charAt(0).toUpperCase() + value.slice(1);
+          const labelNode = button.querySelector("[data-theme-label]") || button.querySelector("span:last-child");
+          if (labelNode) labelNode.textContent = "Theme: " + label;
+        }
+      };
+      let current = localStorage.getItem(key) || "auto";
+      apply(current);
+      if (button) {
+        button.addEventListener("click", function () {
+          current = states[(states.indexOf(current) + 1) % states.length];
+          localStorage.setItem(key, current);
+          apply(current);
+        });
+      }
+      document.querySelectorAll("form").forEach(function (form) {
+        const method = (form.getAttribute("method") || "get").toLowerCase();
+        if (method !== "get" && !form.querySelector("input[name=csrf_token]")) {
+          const csrf = document.createElement("input");
+          csrf.type = "hidden";
+          csrf.name = "csrf_token";
+          csrf.value = window.CDIPD_CSRF_TOKEN || "";
+          form.prepend(csrf);
+        }
+      });
+      document.querySelectorAll("[data-password-toggle]").forEach(function (buttonNode) {
+        const targetId = buttonNode.getAttribute("data-password-toggle");
+        const input = document.getElementById(targetId);
+        if (!input) return;
+        buttonNode.addEventListener("click", function () {
+          const show = input.type === "password";
+          input.type = show ? "text" : "password";
+          buttonNode.classList.toggle("is-visible", show);
+          buttonNode.setAttribute("aria-pressed", show ? "true" : "false");
+          buttonNode.setAttribute("aria-label", show ? "Hide password" : "Show password");
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

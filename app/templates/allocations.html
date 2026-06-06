@@ -1,22 +1,27 @@
 {% extends "base.html" %}
 {% set page_title = "Allocations" %}
-{% set page_subtitle = "" %}
+{% set page_subtitle = "Manage asset allocations and assignments." %}
 {% block content %}
 <div class="stack">
   {% if current_user.role in ["hardware_admin", "super_admin"] %}
   <section class="surface">
     <div class="section-head">
-      <h3>New Allocation</h3>
+      <div>
+        <div class="kicker">Assignment</div>
+        <h3>New Allocation</h3>
+      </div>
     </div>
     <form method="post" class="form-grid">
-      <label>Asset
-        <select name="asset_id">{% for asset in assets %}<option value="{{ asset.id }}">{{ asset.asset_code }} - {{ asset.name }}</option>{% endfor %}</select>
-      </label>
-      <label>Employee
-        <select name="employee_id">{% for employee in employees %}<option value="{{ employee.id }}">{{ employee.full_name }}</option>{% endfor %}</select>
-      </label>
+      <div class="two-col">
+        <label>Asset
+          <select name="asset_id">{% for asset in assets %}<option value="{{ asset.id }}">{{ asset.asset_code }} - {{ asset.name }}</option>{% endfor %}</select>
+        </label>
+        <label>Employee
+          <select name="employee_id">{% for employee in employees %}<option value="{{ employee.id }}">{{ employee.full_name }}</option>{% endfor %}</select>
+        </label>
+      </div>
       <label style="grid-column: 1 / -1;">Remarks <textarea name="remarks"></textarea></label>
-      <div class="actions" style="grid-column: 1 / -1;"><button class="btn primary" type="submit">Submit</button></div>
+      <div class="actions" style="grid-column: 1 / -1; justify-content: flex-end;"><button class="btn primary" type="submit">Submit Assignment</button></div>
     </form>
   </section>
   {% endif %}
@@ -24,10 +29,13 @@
   {% if current_user.role == "employee" and policy_sample_available %}
   <section class="surface">
     <div class="section-head">
-      <h3>Policy and Agreement</h3>
+      <div>
+        <div class="kicker">Information</div>
+        <h3>Policy and Agreement</h3>
+      </div>
       <div class="actions">
-        <a class="btn secondary" href="/policy/reader" target="_blank">Reader</a>
-        <a class="btn secondary" href="{{ policy_sample_url }}" target="_blank">PDF</a>
+        <a class="btn secondary" href="/policy/reader" target="_blank">📖 Reader</a>
+        <a class="btn secondary" href="{{ policy_sample_url }}" target="_blank">📄 PDF</a>
       </div>
     </div>
     {% if active_policy %}
@@ -43,15 +51,18 @@
 
   <section class="surface">
     <div class="section-head">
-      <h3>Allocation Register</h3>
+      <div>
+        <div class="kicker">Directory</div>
+        <h3>Allocation Register</h3>
+      </div>
       <div class="toolbar">
-        <input class="search-box" data-table-search="allocations-table" placeholder="Search">
+        <input class="search-box" data-table-search="allocations-table" placeholder="Search...">
         <select data-table-status="allocations-table">
-          <option value="">All</option>
+          <option value="">All Status</option>
           <option value="submitted">Submitted</option>
-          <option value="pending_signature">Pending signature</option>
+          <option value="pending_signature">Pending Signature</option>
           <option value="signed">Signed</option>
-          <option value="sent_back">Sent back</option>
+          <option value="sent_back">Sent Back</option>
           <option value="rejected">Rejected</option>
         </select>
       </div>
@@ -64,7 +75,7 @@
           <tr data-status="{{ item.status }}">
             <td>{{ item.asset.asset_code }}<br><span class="help">{{ item.asset.name }}</span></td>
             <td>{{ item.employee.full_name }}</td>
-            <td><span class="badge {% if item.status == 'signed' %}success{% elif item.status == 'sent_back' %}danger{% elif item.status == 'rejected' %}danger{% else %}warning{% endif %}">{{ item.status }}</span></td>
+            <td><span class="badge {% if item.status == 'signed' %}success{% elif item.status == 'sent_back' %}danger{% elif item.status == 'rejected' %}danger{% else %}warning{% endif %}">{{ item.status|replace('_', ' ')|title }}</span></td>
             <td>
               {% if current_user.role in ["hr_admin", "super_admin"] and item.status in ["submitted", "sent_back"] %}
               <a class="btn ghost" href="/allocations/{{ item.id }}/decision">📋 Decide</a>
@@ -84,7 +95,14 @@
             </td>
           </tr>
           {% else %}
-          <tr><td colspan="4"><div class="empty-state">No allocations available.</div></td></tr>
+          <tr>
+            <td colspan="4">
+              <div class="empty-state">
+                <svg class="empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h14a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v4"></path><polyline points="14 2 14 8 20 8"></polyline><path d="m3 15 2 2 4-4"></path></svg>
+                <div>No allocations available.</div>
+              </div>
+            </td>
+          </tr>
           {% endfor %}
         </tbody>
       </table>

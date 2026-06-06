@@ -2,6 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from app.core.config import SCHEDULER_ENABLED
 from app.core.database import engine, Base
 from app.core.middleware import ProductionSecurityMiddleware
@@ -30,6 +31,14 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
             target = "/login" if request.url.path.startswith(("/login", "/forgot-password", "/reset-password")) else "/"
         return redirect_with_flash(str(target), "Please complete all required fields and submit the form again.", "error")
     return JSONResponse(status_code=422, content={"detail": exc.errors()})
+
+
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    accepts_html = "text/html" in request.headers.get("accept", "")
+    if exc.status_code == 401 and accepts_html:
+        return redirect_with_flash("/login", "Please sign in to continue.", "warning")
+    return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail or "Request failed"})
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 app.mount("/storage", StaticFiles(directory="storage"), name="storage")

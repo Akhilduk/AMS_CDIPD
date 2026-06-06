@@ -1,26 +1,48 @@
 {% extends "public_base.html" %}
 {% set title = "CDIPD Asset Management" %}
 {% block content %}
-<div class="hero-panel">
-  <div class="kicker">Digital Operations</div>
-  <div class="title">Assets. Policy. Audit.</div>
-  <div class="subtitle">One system to issue, sign, maintain, verify, and close.</div>
-  <div class="actions" style="margin-top: 2rem;">
-    <a class="btn" style="background: #0a2540; color: white; padding: 0.75rem 1.5rem; border-radius: 4px; font-weight: 500; text-decoration: none;" href="/login">Open Workspace</a>
+<section class="hero modern-hero">
+  <div class="hero-panel hero-panel-modern">
+    <div class="kicker">Digital Operations</div>
+    <div class="title">Assets. Policy. Audit.</div>
+    <div class="subtitle">One system to issue, sign, maintain, verify, and close with enterprise-grade traceability.</div>
+    <div class="hero-mini-grid">
+      <div class="hero-mini-card"><strong>Issue</strong><span>Controlled allocation and signing flows</span></div>
+      <div class="hero-mini-card"><strong>Track</strong><span>Maintenance, travel, return, and verification</span></div>
+      <div class="hero-mini-card"><strong>Govern</strong><span>Policy versioning, evidence, and reporting</span></div>
+    </div>
+    <div class="actions hero-cta-row">
+      <a class="btn primary hero-cta" href="/login">Open Workspace</a>
     {% if policy_sample_available %}
-    <a class="btn" style="background: white; color: #0a2540; border: 1px solid #0a2540; padding: 0.75rem 1.5rem; border-radius: 4px; font-weight: 500; text-decoration: none; margin-left: 1rem;" href="/policy/reader" target="_blank">View Policy</a>
+      <a class="btn secondary hero-cta" href="/policy/reader" target="_blank">View Policy</a>
     {% endif %}
+    </div>
   </div>
-</div>
+  <div class="hero-side-panel">
+    <div class="hero-side-card">
+      <div class="kicker">Modules</div>
+      <h3>Enterprise asset lifecycle in one interface</h3>
+      <p class="help">Designed for HR, hardware, directors, and auditors with role-aware dashboards and workflow evidence.</p>
+      <div class="hero-chip-list">
+        <span class="chip">Allocations</span>
+        <span class="chip">Compliance</span>
+        <span class="chip">Returns</span>
+        <span class="chip">Travel</span>
+        <span class="chip">Disposal</span>
+        <span class="chip">Reports</span>
+      </div>
+    </div>
+  </div>
+</section>
 
-<div style="max-width: 1200px; margin: 0 auto; padding: 2rem 1rem;">
+<section class="home-kpi-section">
   <div class="grid-cards">
     {% for item in hero_stats %}
-    <div class="kpi-card" style="text-align: center;">
+    <div class="kpi-card home-kpi-card">
       <div class="number">{{ item.value }}</div>
       <div class="label">{{ item.label }}</div>
     </div>
     {% endfor %}
   </div>
-</div>
+</section>
 {% endblock %}

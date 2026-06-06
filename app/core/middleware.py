@@ -97,21 +97,21 @@ class ProductionSecurityMiddleware(BaseHTTPMiddleware):
             last_activity = int(session_payload.get("last_activity") or session_payload.get("issued_at") or now)
             if now - last_activity > SESSION_MAX_AGE_SECONDS:
                 response = _flash_redirect("/login", "Your session expired due to inactivity. Please sign in again.", "warning")
-                response.delete_cookie(SESSION_COOKIE)
+                response.delete_cookie(SESSION_COOKIE, path="/")
                 return response
             request.state.session_payload = {**session_payload, "last_activity": now}
 
         response = await call_next(request)
         self._ensure_csrf_cookie(request, response)
-        if getattr(request.state, "session_payload", None) and response.status_code < 400:
+        if getattr(request.state, "session_payload", None) and response.status_code < 400 and not getattr(request.state, "clear_session", False):
             response.set_cookie(
                 SESSION_COOKIE,
                 serializer.dumps(request.state.session_payload),
                 max_age=SESSION_MAX_AGE_SECONDS,
-                expires=SESSION_MAX_AGE_SECONDS,
                 httponly=True,
                 samesite="lax",
                 secure=IS_PRODUCTION,
+                path="/",
             )
         return response
 
@@ -174,4 +174,4 @@ class ProductionSecurityMiddleware(BaseHTTPMiddleware):
     def _ensure_csrf_cookie(self, request: Request, response: Response) -> None:
         token = request.cookies.get(CSRF_COOKIE) or getattr(request.state, "csrf_token", None) or secrets.token_urlsafe(32)
         request.state.csrf_token = token
-        response.set_cookie(CSRF_COOKIE, token, max_age=SESSION_MAX_AGE_SECONDS, httponly=True, samesite="lax", secure=IS_PRODUCTION)
+        response.set_cookie(CSRF_COOKIE, token, max_age=SESSION_MAX_AGE_SECONDS, httponly=True, samesite="lax", secure=IS_PRODUCTION, path="/")

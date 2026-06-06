@@ -2,41 +2,86 @@
 {% set title = "Login - CDIPD Asset Management" %}
 {% block content %}
 <div class="login-shell">
-  <div class="login-card">
-    <div class="title">Workspace Login</div>
+  <div class="login-showcase modern-showcase">
+    <div class="kicker">Secure Access</div>
+    <div class="title">CDIPD Asset Workspace</div>
+    <div class="subtitle">Unified operations for allocation, compliance, lifecycle, reporting, and audit.</div>
+    <div class="showcase-points">
+      <div class="showcase-point">
+        <span class="showcase-point-icon">01</span>
+        <div>
+          <strong>Single control surface</strong>
+          <div class="help">Assets, policy signing, maintenance, returns, and evidence in one flow.</div>
+        </div>
+      </div>
+      <div class="showcase-point">
+        <span class="showcase-point-icon">02</span>
+        <div>
+          <strong>Traceable approvals</strong>
+          <div class="help">Every important step is linked to roles, documents, and audit history.</div>
+        </div>
+      </div>
+      <div class="showcase-point">
+        <span class="showcase-point-icon">03</span>
+        <div>
+          <strong>Fast role-based access</strong>
+          <div class="help">Sign in with your workspace account to continue to your assigned modules.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="login-card auth-card">
+    <div class="auth-card-head">
+      <div class="kicker">Workspace Login</div>
+      <div class="title">Sign In</div>
+      <div class="subtitle">Use your assigned CDIPD account credentials.</div>
+    </div>
     
     {% if error %}
-    <div style="background: #dc3545; color: white; padding: 0.75rem; border-radius: 4px; margin-bottom: 1.5rem; text-align: center; font-size: 0.875rem;">
+    <div class="auth-alert error-state">
       {{ error }}
     </div>
     {% endif %}
 
-    <form method="post" action="/login">
-      <div style="margin-bottom: 1rem;">
-        <label style="display: block; margin-bottom: 0.5rem; color: #495057; font-weight: 500; font-size: 0.875rem;">Email Address</label>
-        <input type="email" name="email" required style="width: 100%; padding: 0.75rem; border: 1px solid #ced4da; border-radius: 4px; box-sizing: border-box;">
+    <form method="post" action="/login" class="auth-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <div class="auth-field">
+        <label>Email Address</label>
+        <input type="email" name="email" autocomplete="username" required placeholder="name@cdipd.local">
       </div>
-      <div style="margin-bottom: 1.5rem;">
-        <label style="display: block; margin-bottom: 0.5rem; color: #495057; font-weight: 500; font-size: 0.875rem;">Password</label>
-        <input type="password" name="password" required style="width: 100%; padding: 0.75rem; border: 1px solid #ced4da; border-radius: 4px; box-sizing: border-box;">
+      <div class="auth-field">
+        <div class="field-row">
+          <label>Password</label>
+          <a href="/forgot-password" class="inline-link">Forgot password?</a>
+        </div>
+        <div class="password-field">
+          <input id="login-password" type="password" name="password" autocomplete="current-password" required placeholder="Enter your password">
+          <button class="password-toggle icon-password-toggle" type="button" data-password-toggle="login-password" aria-pressed="false" aria-label="Show password">
+            <span class="password-icon password-icon-show" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </span>
+            <span class="password-icon password-icon-hide" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m3 3 18 18"></path><path d="M10.6 10.7a3 3 0 0 0 4.2 4.2"></path><path d="M9.9 5.1A10.5 10.5 0 0 1 12 5c6.5 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.2"></path><path d="M6.7 6.7A17.2 17.2 0 0 0 2 12s3.5 7 10 7a9.8 9.8 0 0 0 4.1-.9"></path></svg>
+            </span>
+            <span class="sr-only">Toggle password visibility</span>
+          </button>
+        </div>
       </div>
-      <button type="submit" style="width: 100%; background: #0a2540; color: white; border: none; padding: 0.75rem; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 1rem;">Sign In</button>
+      <button class="btn primary auth-submit" type="submit">Sign In</button>
     </form>
-    <div style="margin-top: 0.85rem; text-align: right;">
-      <a href="/forgot-password" style="font-size: 0.9rem;">Forgot password?</a>
-    </div>
     
-    <div style="margin-top: 2rem; border-top: 1px solid #e9ecef; padding-top: 1.5rem;">
-      <div style="font-size: 0.75rem; text-transform: uppercase; color: #6c757d; text-align: center; margin-bottom: 1rem; font-weight: bold;">Demo Accounts</div>
-      <div style="font-size: 0.85rem; color: #495057;">
-        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;"><span>Super Admin</span><span style="font-family: monospace;">superadmin@cdipd.local</span></div>
-        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;"><span>Hardware Admin</span><span style="font-family: monospace;">hardware@cdipd.local</span></div>
-        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;"><span>HR Admin</span><span style="font-family: monospace;">hr@cdipd.local</span></div>
-        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;"><span>Employee</span><span style="font-family: monospace;">employee@cdipd.local</span></div>
-        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;"><span>Director</span><span style="font-family: monospace;">director@cdipd.local</span></div>
-        <div style="display: flex; justify-content: space-between;"><span>Auditor</span><span style="font-family: monospace;">auditor@cdipd.local</span></div>
-        <div style="text-align: center; margin-top: 1rem; color: #6c757d;">Password: <span style="font-family: monospace; background: #e9ecef; padding: 2px 4px; border-radius: 3px;">Demo@12345</span></div>
+    <div class="auth-demo-panel">
+      <div class="auth-demo-title">Demo Accounts</div>
+      <div class="auth-demo-grid">
+        <div class="auth-demo-row"><span>Super Admin</span><code>superadmin@cdipd.local</code></div>
+        <div class="auth-demo-row"><span>Hardware Admin</span><code>hardware@cdipd.local</code></div>
+        <div class="auth-demo-row"><span>HR Admin</span><code>hr@cdipd.local</code></div>
+        <div class="auth-demo-row"><span>Employee</span><code>employee@cdipd.local</code></div>
+        <div class="auth-demo-row"><span>Director</span><code>director@cdipd.local</code></div>
+        <div class="auth-demo-row"><span>Auditor</span><code>auditor@cdipd.local</code></div>
       </div>
+      <div class="auth-demo-password">Password <code>Demo@12345</code></div>
     </div>
   </div>
 </div>

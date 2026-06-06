@@ -3,7 +3,7 @@
 {% set page_subtitle = "Filtered drill-down report with export." %}
 {% block content %}
 <div class="stack">
-  <section class="surface">
+  <section class="surface report-shell">
     <div class="section-head">
       <div>
         <div class="eyebrow">Report Drilldown</div>
@@ -13,13 +13,13 @@
         <a class="btn secondary" href="/reports">Back to Reports</a>
       </div>
     </div>
-    <form method="get" action="/reports/drilldown/{{ report_name }}" class="surface tight" style="margin-bottom: 14px;">
-      <div class="form-grid">
-        <label>Search
+    <form method="get" action="/reports/drilldown/{{ report_name }}" class="report-filter-panel">
+      <div class="report-filter-grid">
+        <label class="report-filter-field">Search
           <input name="q" value="{{ active_filters.get('q', '') }}" placeholder="Search report rows">
         </label>
         {% for filter_meta in report.filters %}
-        <label>{{ filter_meta.label }}
+        <label class="report-filter-field">{{ filter_meta.label }}
           <select name="{{ filter_meta.name }}">
             <option value="">All</option>
             {% for option in filter_meta.options %}
@@ -29,20 +29,24 @@
         </label>
         {% endfor %}
         {% if report.date_filter %}
-        <label>{{ report.date_filter.label }} From
+        <label class="report-filter-field">{{ report.date_filter.label }} From
           <input type="date" name="start_date" value="{{ active_filters.get('start_date', '') }}">
         </label>
-        <label>{{ report.date_filter.label }} To
+        <label class="report-filter-field">{{ report.date_filter.label }} To
           <input type="date" name="end_date" value="{{ active_filters.get('end_date', '') }}">
         </label>
         {% endif %}
       </div>
-      <div class="actions" style="margin-top: 12px;">
-        <button class="btn secondary" type="submit">Apply Filters</button>
-        <a class="btn secondary" href="/reports/drilldown/{{ report_name }}">Reset</a>
-        <a class="btn secondary" href="/reports/export/{{ report.export }}?{{ request.query_params }}">Export CSV</a>
-        <a class="btn secondary" href="/reports/export/{{ report.export }}?format=xlsx&{{ request.query_params }}">Export Excel</a>
-        <a class="btn secondary" href="/reports/export/{{ report.export }}?format=pdf&{{ request.query_params }}">Export PDF</a>
+      <div class="report-toolbar">
+        <div class="actions">
+          <button class="btn primary" type="submit">Apply Filters</button>
+          <a class="btn secondary" href="/reports/drilldown/{{ report_name }}">Reset</a>
+        </div>
+        <div class="actions">
+          <a class="btn secondary" href="/reports/export/{{ report.export }}?{{ request.query_params }}">CSV</a>
+          <a class="btn secondary" href="/reports/export/{{ report.export }}?format=xlsx&{{ request.query_params }}">Excel</a>
+          <a class="btn secondary" href="/reports/export/{{ report.export }}?format=pdf&{{ request.query_params }}">PDF</a>
+        </div>
       </div>
     </form>
     <div class="table-wrap">

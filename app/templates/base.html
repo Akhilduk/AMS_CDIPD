@@ -7,8 +7,9 @@
   <link rel="stylesheet" href="/static/css/app.css">
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
   <div class="layout">
-    <aside class="sidebar">
+    <aside class="sidebar" aria-label="Sidebar navigation">
       <div class="sidebar-shell">
         <div class="brand-block">
           <div class="kicker" style="color: rgba(243,245,238,0.66);">CDIPD Workspace</div>
@@ -30,27 +31,27 @@
             <div class="sidebar-group-title">{{ group.label }}</div>
             {% for item in group["items"] %}
             <a class="nav-item {% if active_path == item.path or active_path.startswith(item.path ~ '/') %}active{% endif %}" href="{{ item.path }}">
-              <span class="nav-icon">{{ item.icon }}</span>{{ item.label }}
+              <span class="nav-icon" aria-hidden="true">{{ item.icon }}</span>
+              <span>{{ item.label }}</span>
             </a>
             {% endfor %}
           </div>
           {% endfor %}
         </nav>
 
-        <div class="sidebar-footer">
-        </div>
+        <div class="sidebar-footer"></div>
       </div>
     </aside>
 
-    <main class="content">
+    <main class="content" id="main-content">
       <div class="page-shell">
         <header class="app-header">
           <div class="header-meta">
             {% if breadcrumb %}
-            <div class="breadcrumb">
+            <div class="breadcrumb" aria-label="Breadcrumb">
               {% for crumb in breadcrumb %}
-                <a href="{{ crumb.href }}">{{ crumb.label }}</a>
-                {% if not loop.last %}<span class="breadcrumb-sep">›</span>{% endif %}
+              <a href="{{ crumb.href }}">{{ crumb.label }}</a>
+              {% if not loop.last %}<span class="breadcrumb-sep">&rsaquo;</span>{% endif %}
               {% endfor %}
             </div>
             {% endif %}
@@ -58,36 +59,81 @@
             <div class="title">{{ page_title }}</div>
             {% if page_subtitle %}<div class="subtitle">{{ page_subtitle }}</div>{% endif %}
           </div>
-          <div class="header-actions page-action-bar">
+
+          <div class="header-actions">
             {% if page_actions %}
-            {% for action in page_actions %}
-            <a class="btn {% if action.variant == 'primary' %}primary{% elif action.variant == 'secondary' %}secondary{% else %}ghost{% endif %}" href="{{ action.href }}">
-              {% if action.icon %}{{ action.icon }}{% endif %}{{ action.label }}
-            </a>
-            {% endfor %}
+            <div class="page-action-bar">
+              {% for action in page_actions %}
+              <a class="btn {% if action.variant == 'primary' %}primary{% elif action.variant == 'secondary' %}secondary{% else %}ghost{% endif %}" href="{{ action.href }}">
+                {% if action.icon %}<span aria-hidden="true">{{ action.icon }}</span>{% endif %}
+                <span>{{ action.label }}</span>
+              </a>
+              {% endfor %}
+            </div>
             {% endif %}
-            <div class="spacer"></div>
+
             {% if current_user %}
-            <form id="global-search" action="/search" method="get" class="global-search" style="display:flex; gap:6px; align-items:center;">
-              <input type="search" name="q" value="{{ request.query_params.get('q', '') }}" placeholder="Search assets, employees, tickets..." aria-label="Global search" style="min-width:260px;">
-              <button class="btn secondary" type="submit">Search</button>
+            <div class="header-utility-bar">
+              <form id="global-search" action="/search" method="get" class="global-search" role="search" aria-label="Global search">
+                <span class="header-icon utility-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+                </span>
+              <label class="sr-only" for="global-search-input">Global search</label>
+              <input id="global-search-input" type="search" name="q" value="{{ request.query_params.get('q', '') }}" placeholder="Search assets, employees, tickets...">
+              <button class="btn secondary search-submit" type="submit">
+                <span>Search</span>
+              </button>
             </form>
-            <a class="btn icon-btn" href="/notifications" title="Notifications{% if unread_notifications %} ({{ unread_notifications }}){% endif %}">🔔{% if unread_notifications %}<span class="badge-dot">●</span>{% endif %}</a>
+            <div class="header-toolbar">
+              <a class="btn secondary header-link-btn" href="/notifications" aria-label="Open notifications">
+              <span class="header-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10 21a2 2 0 0 0 4 0"></path></svg>
+              </span>
+              <span>Notifications</span>
+              {% if unread_notifications %}
+              <span class="badge-dot" aria-hidden="true"></span>
+              <span class="sr-only">{{ unread_notifications }} unread notifications</span>
+              {% endif %}
+            </a>
+            <form method="post" action="/logout" class="inline-form" aria-label="Log out">
+              <button class="btn ghost header-link-btn" type="submit">
+                <span class="header-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="m16 17 5-5-5-5"></path><path d="M21 12H9"></path></svg>
+                </span>
+                <span>Log Out</span>
+              </button>
+            </form>
+            <button class="btn ghost header-link-btn mobile-only" type="button" data-sidebar-toggle aria-label="Toggle sidebar navigation">
+              <span class="header-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"></path><path d="M4 12h16"></path><path d="M4 17h16"></path></svg>
+              </span>
+              <span>Menu</span>
+            </button>
+            <button class="btn ghost header-link-btn theme-toggle" type="button" data-theme-toggle aria-label="Toggle theme">
+              <span class="header-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"></path></svg>
+              </span>
+              <span>Theme: Auto</span>
+            </button>
+            </div>
+            </div>
+            {% else %}
+            <div class="header-toolbar">
+              <button class="btn ghost header-link-btn theme-toggle" type="button" data-theme-toggle aria-label="Toggle theme">
+                <span class="header-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"></path></svg>
+                </span>
+                <span>Theme: Auto</span>
+              </button>
+            </div>
             {% endif %}
-            {% if current_user %}
-            <a class="btn icon-btn" href="/logout" title="Logout">🚪</a>
-            {% endif %}
-            {% if current_user %}
-            <button class="btn icon-btn" type="button" data-sidebar-toggle title="Toggle Menu">☰</button>
-            {% endif %}
-            <button class="btn icon-btn theme-toggle" type="button" data-theme-toggle title="Toggle Theme">🌙</button>
           </div>
         </header>
 
         {% if flash %}
-        <div class="flash {{ flash.level }}">
+        <div class="flash {{ flash.level }}" role="status" aria-live="polite">
           <div>{{ flash.message }}</div>
-          <button type="button" data-dismiss-flash>&times;</button>
+          <button type="button" data-dismiss-flash aria-label="Dismiss message">&times;</button>
         </div>
         {% endif %}
 
@@ -195,6 +241,8 @@
           form.prepend(csrf);
         }
         form.querySelectorAll("input, select, textarea").forEach(function (field) {
+          if (field.type === "hidden") return;
+          if (field.nextElementSibling && field.nextElementSibling.classList && field.nextElementSibling.classList.contains("field-error")) return;
           field.setAttribute("data-live-validate", "true");
           const help = document.createElement("div");
           help.className = "field-error";
@@ -204,6 +252,19 @@
           };
           field.addEventListener("input", syncMessage);
           field.addEventListener("blur", syncMessage);
+        });
+      });
+
+      document.querySelectorAll("[data-password-toggle]").forEach(function (buttonNode) {
+        const targetId = buttonNode.getAttribute("data-password-toggle");
+        const input = document.getElementById(targetId);
+        if (!input) return;
+        buttonNode.addEventListener("click", function () {
+          const show = input.type === "password";
+          input.type = show ? "text" : "password";
+          buttonNode.classList.toggle("is-visible", show);
+          buttonNode.setAttribute("aria-pressed", show ? "true" : "false");
+          buttonNode.setAttribute("aria-label", show ? "Hide password" : "Show password");
         });
       });
 
@@ -229,15 +290,17 @@
       });
 
       document.querySelectorAll("[data-countdown]").forEach(function (node) {
-        const button = node.closest(".panel-note")?.previousElementSibling?.querySelector("[data-resend-at]");
+        const buttonNode = node.closest(".panel-note") && node.closest(".panel-note").previousElementSibling
+          ? node.closest(".panel-note").previousElementSibling.querySelector("[data-resend-at]")
+          : null;
         const target = new Date(node.getAttribute("data-countdown"));
         const tick = function () {
           const remaining = Math.max(0, Math.floor((target.getTime() - Date.now()) / 1000));
           node.textContent = remaining + "s";
-          if (button) button.disabled = remaining > 0;
+          if (buttonNode) buttonNode.disabled = remaining > 0;
           if (remaining <= 0) {
             node.textContent = "now";
-            if (button) button.disabled = false;
+            if (buttonNode) buttonNode.disabled = false;
             window.clearInterval(timer);
           }
         };

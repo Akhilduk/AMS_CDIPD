@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% set page_title = "Signed Document" %}
+{% set page_subtitle = "" %}
+{% block content %}
+<div class="stack print-sheet">
+  <section class="surface">
+    <div class="section-head">
+      <div>
+        <div class="kicker">Signed Agreement</div>
+        <div class="title" style="font-size: 1.8rem; margin-top: 8px;">{{ document.document_number }}</div>
+        <div class="subtitle">Immutable signing record with evidence and policy version mapping.</div>
+      </div>
+      <div class="actions">
+        <a class="btn secondary" href="/documents/{{ document.id }}">Download PDF</a>
+        <button class="btn primary" type="button" onclick="window.print()">Print</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="surface policy-document">
+    <section>
+      <div class="section-head">
+        <h3>Employee Details</h3>
+      </div>
+      <table class="details-table">
+        <tr><th>Name</th><td>{{ allocation.employee.full_name }}</td><th>Code</th><td>{{ allocation.employee.employee_code }}</td></tr>
+        <tr><th>Email</th><td>{{ allocation.employee.email }}</td><th>Department</th><td>{{ allocation.employee.department }}</td></tr>
+      </table>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <h3>Issued Asset</h3>
+      </div>
+      <table class="asset-table">
+        <thead><tr><th>Asset</th><th>Model</th><th>Serial</th><th>Location</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>{{ allocation.asset.asset_code }} - {{ allocation.asset.name }}</td>
+            <td>{{ allocation.asset.model }}</td>
+            <td>{{ allocation.asset.serial_number }}</td>
+            <td>{{ allocation.asset.location.name }}</td>
+            <td>{{ allocation.asset.status }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <h3>Policy and Declaration</h3>
+      </div>
+      <div class="help" style="margin-bottom: 10px;">
+        {{ document.policy.title if document.policy else (allocation.policy.title if allocation and allocation.policy else "No linked policy") }}
+        | Version {{ document.policy.version if document.policy else (allocation.policy.version if allocation and allocation.policy else "N/A") }}
+        {% if document.policy or (allocation and allocation.policy) %}
+        {% set active_policy = document.policy if document.policy else allocation.policy %}
+        | Status {{ active_policy.status }}
+        | Master {{ active_policy.policy_master.policy_code if active_policy.policy_master else "-" }}
+        {% endif %}
+      </div>
+      <div class="panel-note">{{ allocation.declaration_text if allocation else "Workflow-generated document linked to the active policy context." }}</div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <h3>Digital Acceptance Evidence</h3>
+      </div>
+      <table class="details-table">
+        <tr><th>Document Hash</th><td colspan="3" class="mono">{{ document.hash_sha256 }}</td></tr>
+        <tr><th>Template</th><td>{{ document.template_name or "-" }}</td><th>Template Code</th><td>{{ document.template_code or "-" }}</td></tr>
+        <tr><th>Source</th><td>{{ document.source_module or "-" }}</td><th>Reference</th><td>{{ document.source_reference or "-" }}</td></tr>
+        <tr><th>Evidence</th><td colspan="3">{{ document.evidence }}</td></tr>
+        <tr><th>Generated</th><td>{{ document.created_at.strftime("%Y-%m-%d %H:%M UTC") }}</td><th>Requested By</th><td>{{ allocation.requested_by.full_name if allocation and allocation.requested_by else "-" }}</td></tr>
+        <tr><th>Approved By</th><td>{{ allocation.approved_by.full_name if allocation and allocation.approved_by else "Pending" }}</td><th>Allocation</th><td>{{ "#" ~ allocation.id if allocation else "-" }}</td></tr>
+      </table>
+    </section>
+    {% if document.rendered_content %}
+    <section>
+      <div class="section-head">
+        <h3>Rendered Template Snapshot</h3>
+      </div>
+      <div class="panel-note">{{ document.rendered_content|safe }}</div>
+    </section>
+    {% endif %}
+  </section>
+
+  <section class="surface">
+    <div class="section-head">
+      <h3>History Timeline</h3>
+    </div>
+    <div class="timeline">
+      {% for item in document_timeline %}
+      <div class="timeline-item">
+        <div class="help">{{ item.created_at.strftime("%Y-%m-%d %H:%M") }}</div>
+        <div>
+          <div style="font-weight: 800;">{{ item.module }} - {{ item.action }}</div>
+          <div class="help">{{ item.actor_name }} | Ref {{ item.reference_id }}</div>
+          {% if item.new_value %}<div class="help" style="margin-top: 6px;">{{ item.new_value }}</div>{% endif %}
+        </div>
+      </div>
+      {% else %}
+      <div class="empty-state">No timeline events available.</div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="surface">
+    <div class="section-head">
+      <h3>Related Documents</h3>
+    </div>
+    {% if related_documents %}
+    <div class="chip-row" style="margin-bottom: 14px;">
+      {% for item in related_documents %}
+      <a class="chip" href="/documents/{{ document.id }}/view?compare_id={{ item.id }}">{{ item.document_number }}</a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">No related signed documents found.</div>
+    {% endif %}
+
+    {% if compare_document %}
+    <div class="diff-grid">
+      <div class="diff-card">
+        <div class="kicker">Current</div>
+        <div style="font-weight: 800; margin-top: 8px;">{{ document.document_number }}</div>
+        <div class="help">Employee: {{ document.employee.full_name if document.employee else (allocation.employee.full_name if allocation and allocation.employee else "-") }}</div>
+        <div class="help">Asset: {{ document.asset.asset_code if document.asset else (allocation.asset.asset_code if allocation and allocation.asset else "-") }}</div>
+        <div class="help">Policy: {{ document.policy.version if document.policy else (allocation.policy.version if allocation and allocation.policy else "N/A") }}</div>
+        <div class="help">Template: {{ document.template_code or "N/A" }}</div>
+      </div>
+      <div class="diff-card">
+        <div class="kicker">Compared</div>
+        <div style="font-weight: 800; margin-top: 8px;">{{ compare_document.document_number }}</div>
+        <div class="help">Employee: {{ compare_document.employee.full_name if compare_document.employee else (compare_allocation.employee.full_name if compare_allocation and compare_allocation.employee else "-") }}</div>
+        <div class="help">Asset: {{ compare_document.asset.asset_code if compare_document.asset else (compare_allocation.asset.asset_code if compare_allocation and compare_allocation.asset else "-") }}</div>
+        <div class="help">Policy: {{ compare_document.policy.version if compare_document.policy else (compare_allocation.policy.version if compare_allocation and compare_allocation.policy else "N/A") }}</div>
+        <div class="help">Template: {{ compare_document.template_code or "N/A" }}</div>
+      </div>
+    </div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

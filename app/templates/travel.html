@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% set page_title = "Asset Abroad Approval" %}
+{% set page_subtitle = "Employee travel requests with director approval and return commitment tracking." %}
+{% block content %}
+<div class="stack">
+  <div class="summary-grid">
+    <div class="summary-tile"><div class="kicker">Requests</div><div class="main">{{ travel_requests|length }}</div><div class="sub">Travel approval items recorded</div></div>
+    <div class="summary-tile"><div class="kicker">Available Assets</div><div class="main">{{ assets|length }}</div><div class="sub">Assets visible for travel workflow</div></div>
+  </div>
+
+  {% if current_user.role == "employee" %}
+  <section class="surface">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Travel Intake</div>
+        <h3>Request Asset Travel Approval</h3>
+      </div>
+    </div>
+    <form method="post" class="form-grid">
+      <label>Asset
+        <select name="asset_id">{% for asset in assets %}<option value="{{ asset.id }}">{{ asset.asset_code }} - {{ asset.name }}</option>{% endfor %}</select>
+      </label>
+      <label>Destination Country <input name="destination_country" required></label>
+      <label>Departure Date <input type="date" name="departure_date" required></label>
+      <label>Return Date <input type="date" name="return_date" required></label>
+      <label style="grid-column: 1 / -1;">Purpose <textarea name="purpose" required></textarea></label>
+      <div class="actions" style="grid-column: 1 / -1;"><button class="btn primary" type="submit">Submit Request</button></div>
+    </form>
+  </section>
+  {% endif %}
+
+  <section class="surface">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Approval Queue</div>
+        <h3>Travel Request Register</h3>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Employee</th><th>Asset</th><th>Trip</th><th>Status</th><th>Actions</th><th>Document</th></tr></thead>
+        <tbody>
+          {% for item in travel_requests %}
+          {% set workflow_document = document_map.get("travel:" ~ item.id) %}
+          <tr>
+            <td>{{ item.employee.full_name }}</td>
+            <td>{{ item.asset.asset_code }}<br><span class="help">{{ item.asset.name }}</span></td>
+            <td>{{ item.destination_country }}<br><span class="help">{{ item.departure_date }} to {{ item.return_date }}</span></td>
+            <td><span class="badge {% if item.status == 'approved' %}success{% elif item.status == 'rejected' %}danger{% else %}warning{% endif %}">{{ item.status }}</span></td>
+            <td>
+              <div class="help">{{ item.purpose }}</div>
+              {% if current_user.role in ["director", "super_admin"] and item.status == "submitted" %}
+              <a class="btn ghost" href="/travel/{{ item.id }}/decision">📋 Decide</a>
+              {% endif %}
+            </td>
+            <td>
+              {% if workflow_document %}
+              <div class="actions">
+                <a class="btn ghost" href="/documents/{{ workflow_document.id }}/view">View</a>
+              </div>
+              {% else %}
+              <span class="help">-</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+          {% if travel_requests|length == 0 %}
+          <tr><td colspan="6"><div class="empty-state">No travel requests yet. Approved or pending international carry requests will appear here.</div></td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

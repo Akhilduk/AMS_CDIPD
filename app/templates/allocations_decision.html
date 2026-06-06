@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="stack">
+  <section class="form-card">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">HR Approval Workflow</div>
+        <h3>Allocation Decision</h3>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h4 class="form-section-title">Request Details</h4>
+      <div class="panel-note">
+        <strong>Asset:</strong> {{ allocation.asset.asset_code }} — {{ allocation.asset.name }}<br>
+        <strong>Employee:</strong> {{ allocation.employee.full_name }}<br>
+        <strong>Current Status:</strong> {{ allocation.status }}<br>
+        <strong>Remarks:</strong> {{ allocation.remarks or "None" }}
+      </div>
+    </div>
+
+    <form method="post" class="form-grid">
+      <div class="form-section">
+        <h4 class="form-section-title">Policy Selection & Decision</h4>
+        <label>Policy Document
+          <select name="policy_id" required>
+            <option value="">-- Select applicable policy --</option>
+            {% for policy in policies %}
+            <option value="{{ policy.id }}">{{ policy.version }} — {{ policy.title }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label>Internal Remarks <textarea name="remarks" rows="4" placeholder="Document your decision and any conditions...">{{ allocation.remarks or "" }}</textarea></label>
+      </div>
+
+      <div class="actions" style="grid-column: 1 / -1; justify-content: flex-end; gap: 8px; margin-top: 12px;">
+        <a class="btn secondary" href="/allocations">← Back</a>
+        <button class="btn danger" type="submit" name="decision" value="reject" data-confirm="Reject this allocation? This cannot be undone.">✕ Reject</button>
+        <button class="btn warning" type="submit" name="decision" value="send_back" data-confirm="Send back for revision?">⟲ Send Back</button>
+        <button class="btn success" type="submit" name="decision" value="approve" data-confirm="Approve this allocation? Employee will receive signing request.">✓ Approve</button>
+      </div>
+    </form>
+  </section>
+</div>
+{% endblock %}

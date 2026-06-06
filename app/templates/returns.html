@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% set page_title = "Return and Exit Clearance" %}
+{% set page_subtitle = "Return initiation, QR verification, condition capture, liability and no-dues closure." %}
+{% set page_actions = [{"href": "/returns/new", "label": "Initiate Return", "variant": "primary", "icon": "➕"}] %}
+{% block content %}
+<div class="stack">
+  <div class="summary-grid">
+    <div class="summary-tile"><div class="kicker">Return Cases</div><div class="main">{{ returns|length }}</div><div class="sub">Active and historic returns</div></div>
+    <div class="summary-tile"><div class="kicker">Assets in Workflow</div><div class="main">{{ assets|length }}</div><div class="sub">Eligible return assets</div></div>
+  </div>
+
+  <section class="surface">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Verification Queue</div>
+        <h3>Return Register</h3>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Asset</th>
+            <th>Employee</th>
+            <th>Status</th>
+            <th>Return Notes</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in returns %}
+          {% set return_document = document_map.get(("return", "return:" ~ item.id)) %}
+          {% set no_dues_document = document_map.get(("exit_clearance", "return:" ~ item.id ~ ":no-dues")) %}
+          <tr>
+            <td>{{ item.asset.asset_code }}<br><span class="help">{{ item.asset.name }}</span></td>
+            <td>{{ item.employee.full_name }}</td>
+            <td>
+              <span class="badge">{{ item.status }}</span>
+              <div class="help">Clearance: {{ item.exit_clearance_status }}</div>
+            </td>
+            <td>
+              <div class="help">{{ item.reason }}</div>
+              {% if item.condition_notes %}
+              <div class="help">Condition: {{ item.condition_notes }}</div>
+              {% endif %}
+            </td>
+            <td>
+              <div class="actions">
+                <a class="btn ghost" href="/returns/{{ item.id }}">View</a>
+                {% if current_user.role in ["hardware_admin", "hr_admin", "super_admin"] %}
+                <a class="btn secondary" href="/returns/{{ item.id }}">Verify</a>
+                {% endif %}
+              </div>
+              {% if return_document %}
+              <div class="actions" style="margin-top: 8px;">
+                <a class="btn ghost" href="/documents/{{ return_document.id }}/view">Return Doc</a>
+              </div>
+              {% endif %}
+              {% if no_dues_document %}
+              <div class="actions" style="margin-top: 8px;">
+                <a class="btn ghost" href="/documents/{{ no_dues_document.id }}/view">No-Dues</a>
+              </div>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+          {% if returns|length == 0 %}
+          <tr><td colspan="5"><div class="empty-state">No return or exit-clearance cases yet. Use the button above to initiate a new request.</div></td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

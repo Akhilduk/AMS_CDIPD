@@ -1,0 +1,26 @@
+{% extends "public_base.html" %}
+{% set title = "CDIPD Asset Management" %}
+{% block content %}
+<div class="hero-panel">
+  <div class="kicker">Digital Operations</div>
+  <div class="title">Assets. Policy. Audit.</div>
+  <div class="subtitle">One system to issue, sign, maintain, verify, and close.</div>
+  <div class="actions" style="margin-top: 2rem;">
+    <a class="btn" style="background: #0a2540; color: white; padding: 0.75rem 1.5rem; border-radius: 4px; font-weight: 500; text-decoration: none;" href="/login">Open Workspace</a>
+    {% if policy_sample_available %}
+    <a class="btn" style="background: white; color: #0a2540; border: 1px solid #0a2540; padding: 0.75rem 1.5rem; border-radius: 4px; font-weight: 500; text-decoration: none; margin-left: 1rem;" href="/policy/reader" target="_blank">View Policy</a>
+    {% endif %}
+  </div>
+</div>
+
+<div style="max-width: 1200px; margin: 0 auto; padding: 2rem 1rem;">
+  <div class="grid-cards">
+    {% for item in hero_stats %}
+    <div class="kpi-card" style="text-align: center;">
+      <div class="number">{{ item.value }}</div>
+      <div class="label">{{ item.label }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

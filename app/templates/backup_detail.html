@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% set page_title = "Backup Allocation Detail" %}
+{% set page_subtitle = "Review the backup asset assignment and close it when the original asset is restored." %}
+{% set page_actions = [{"href": "/backup", "label": "Backup Register", "variant": "secondary", "icon": "◀️"}] %}
+{% block content %}
+<div class="stack">
+  <section class="surface">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Backup Allocation</div>
+        <h3>#{{ item.id }} - {{ item.employee.full_name }}</h3>
+      </div>
+    </div>
+    <div class="grid-cards">
+      <div class="kpi-card">
+        <div class="number">Status</div>
+        <div class="label">{{ item.status }}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="number">Issued</div>
+        <div class="label">{{ item.issue_date.strftime('%Y-%m-%d') }}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="number">Return By</div>
+        <div class="label">{{ item.expected_return_date.strftime('%Y-%m-%d') if item.expected_return_date else 'Not set' }}</div>
+      </div>
+    </div>
+
+    <div class="form-grid" style="margin-top: 20px;">
+      <div class="policy-summary">
+        <h4>Assignment Details</h4>
+        <p><strong>Employee:</strong> {{ item.employee.full_name }}</p>
+        <p><strong>Primary Asset:</strong> {{ item.primary_asset.asset_code }} — {{ item.primary_asset.name }}</p>
+        <p><strong>Backup Asset:</strong> {{ item.backup_asset.asset_code }} — {{ item.backup_asset.name }}</p>
+        <p><strong>Reason:</strong> {{ item.reason }}</p>
+      </div>
+      <div class="policy-summary">
+        <h4>Current Status</h4>
+        <p><strong>Backup Asset Status:</strong> {{ item.backup_asset.status }}</p>
+        <p><strong>Primary Asset Status:</strong> {{ item.primary_asset.status }}</p>
+        <p><strong>Created On:</strong> {{ item.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+      </div>
+    </div>
+
+    <div class="actions" style="margin-top: 18px;">
+      {% if item.status == "active" %}
+      <form method="post" action="/backup/{{ item.id }}/close">
+        <button class="btn secondary" type="submit" data-confirm="Close this backup allocation and return the backup asset?">Close Backup Allocation</button>
+      </form>
+      {% else %}
+      <span class="help">This backup allocation has already been closed.</span>
+      {% endif %}
+    </div>
+  </section>
+</div>
+{% endblock %}

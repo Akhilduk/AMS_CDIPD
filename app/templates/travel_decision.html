@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="stack">
+  <section class="form-card">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Travel Approval</div>
+        <h3>Director Decision Required</h3>
+      </div>
+    </section>
+
+    <form method="post" class="form-grid">
+      <div class="form-section">
+        <h4 class="form-section-title">Travel Request Details</h4>
+        <div class="panel-note">
+          <strong>Employee:</strong> {{ travel.employee.full_name }}<br>
+          <strong>Asset:</strong> {{ travel.asset.asset_code }} — {{ travel.asset.name }}<br>
+          <strong>Destination:</strong> {{ travel.destination_country }}<br>
+          <strong>Dates:</strong> {{ travel.departure_date }} to {{ travel.return_date }}<br>
+          <strong>Purpose:</strong> {{ travel.purpose }}
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h4 class="form-section-title">Director Decision</h4>
+        <label>Comment <textarea name="director_comment" rows="4" placeholder="Add approval/rejection reason..."></textarea></label>
+      </div>
+
+      <div class="actions" style="grid-column: 1 / -1; justify-content: flex-end; gap: 8px; margin-top: 12px;">
+        <a class="btn secondary" href="/travel">← Back</a>
+        <button class="btn danger" type="submit" name="decision" value="reject" data-confirm="Reject this travel request?">✕ Reject</button>
+        <button class="btn success" type="submit" name="decision" value="approve" data-confirm="Approve this travel request?">✓ Approve</button>
+      </div>
+    </form>
+  </section>
+</div>
+{% endblock %}

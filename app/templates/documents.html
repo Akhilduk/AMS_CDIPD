@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% set page_title = "Documents" %}
+{% set page_subtitle = "" %}
+{% block content %}
+<div class="stack">
+  <section class="surface">
+    <div class="section-head">
+      <h3>Signed Document Repository</h3>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Document</th><th>Employee</th><th>Asset</th><th>Policy</th><th>Template</th><th>Source</th><th>Actions</th></tr></thead>
+        <tbody>
+          {% for item in documents %}
+          <tr>
+            <td>{{ item.document_number }}</td>
+            <td>{{ item.employee.full_name if item.employee else (item.allocation.employee.full_name if item.allocation and item.allocation.employee else "-") }}</td>
+            <td>{{ item.asset.asset_code if item.asset else (item.allocation.asset.asset_code if item.allocation and item.allocation.asset else "-") }}</td>
+            <td>{{ item.policy.version if item.policy else (item.allocation.policy.version if item.allocation and item.allocation.policy else "-") }}</td>
+            <td>{{ item.template_name or item.template_code or "-" }}</td>
+            <td>{{ item.source_module }}{% if item.source_reference %}<div class="help">{{ item.source_reference }}</div>{% endif %}</td>
+            <td>
+              <div class="actions">
+                <a href="/documents/{{ item.id }}/view">View</a>
+                <a href="/documents/{{ item.id }}">PDF</a>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="5"><div class="empty-state">No documents available.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

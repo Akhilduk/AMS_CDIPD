@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% set page_title = "Policy Management" %}
+{% set page_subtitle = "Policy masters, version lifecycle, and document template repository." %}
+{% block content %}
+<div class="stack">
+  <div class="summary-grid">
+    <div class="summary-tile"><div class="kicker">Policy Masters</div><div class="main">{{ masters|length }}</div><div class="sub">Defined policy families</div></div>
+    <div class="summary-tile"><div class="kicker">Versions</div><div class="main">{{ versions|length }}</div><div class="sub">Draft, review, approved, published, archived</div></div>
+    <div class="summary-tile"><div class="kicker">Templates</div><div class="main">{{ templates|length }}</div><div class="sub">HTML-driven document templates</div></div>
+    <div class="summary-tile"><div class="kicker">Published</div><div class="main">{{ 1 if active_policy else 0 }}</div><div class="sub">Single active policy version</div></div>
+  </div>
+
+  <div class="split-card">
+    <section class="surface">
+      <div class="section-head"><h3>Create Policy Master</h3></div>
+      <form method="post" action="/policies/masters" class="form-grid">
+        <label>Policy Code <input name="policy_code" placeholder="POL-ASSET-RETURN" required></label>
+        <label>Title <input name="title" required></label>
+        <label>Owner Role
+          <select name="owner_role">
+            <option value="hr_admin">HR Admin</option>
+            <option value="hardware_admin">Hardware Admin</option>
+            <option value="super_admin">Super Admin</option>
+          </select>
+        </label>
+        <label style="display:flex;align-items:center;gap:.65rem;margin-top:1.8rem;"><input type="checkbox" name="active" checked> Active</label>
+        <label style="grid-column: 1 / -1;">Description <textarea name="description"></textarea></label>
+        <div class="actions" style="grid-column: 1 / -1;"><button class="btn primary" type="submit">Create Master</button></div>
+      </form>
+    </section>
+
+    <section class="surface">
+      <div class="section-head"><h3>Create Policy Version</h3></div>
+      <form method="post" action="/policies/versions" class="form-grid">
+        <label>Policy Master
+          <select name="policy_master_id">{% for item in masters %}<option value="{{ item.id }}">{{ item.policy_code }} - {{ item.title }}</option>{% endfor %}</select>
+        </label>
+        <label>Title <input name="title" value="{{ active_policy.title if active_policy else 'Asset Usage Policy' }}" required></label>
+        <label>Version <input name="version" placeholder="v1.1" required></label>
+        <label>Effective Date <input type="date" name="effective_date"></label>
+        <label style="grid-column: 1 / -1;">Approval Remarks <input name="approval_remarks" placeholder="Draft rationale or review note"></label>
+        <label style="grid-column: 1 / -1;">Version Body <textarea name="body" required>{% if active_policy %}{{ active_policy.body }}{% endif %}</textarea></label>
+        <div class="actions" style="grid-column: 1 / -1;"><button class="btn primary" type="submit">Create Draft Version</button></div>
+      </form>
+    </section>
+  </div>
+
+  <section class="surface">
+    <div class="section-head"><h3>Policy Masters</h3></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Code</th><th>Title</th><th>Owner</th><th>Status</th><th>Description</th></tr></thead>
+        <tbody>
+          {% for item in masters %}
+          <tr><td>{{ item.policy_code }}</td><td>{{ item.title }}</td><td>{{ item.owner_role }}</td><td>{{ "Active" if item.active else "Inactive" }}</td><td>{{ item.description or "-" }}</td></tr>
+          {% else %}
+          <tr><td colspan="5"><div class="empty-state">No policy masters available.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="surface">
+    <div class="section-head"><h3>Version Register</h3></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Master</th><th>Version</th><th>Status</th><th>Effective Date</th><th>Actions</th></tr></thead>
+        <tbody>
+          {% for policy in versions %}
+          <tr>
+            <td>{{ policy.policy_master.policy_code if policy.policy_master else "-" }}<br><span class="help">{{ policy.title }}</span></td>
+            <td>{{ policy.version }}</td>
+            <td><span class="badge">{{ policy.status }}</span></td>
+            <td>{{ policy.effective_date or "-" }}</td>
+            <td>
+              <div class="actions">
+                {% if policy.status == "draft" %}
+                <form method="post" action="/policies/{{ policy.id }}/submit-review"><button class="btn secondary" type="submit">Submit Review</button></form>
+                {% endif %}
+                {% if policy.status in ["draft", "under_review"] %}
+                <form method="post" action="/policies/{{ policy.id }}/approve" class="actions">
+                  <input name="remarks" placeholder="Approval remarks">
+                  <button class="btn secondary" type="submit">Approve</button>
+                </form>
+                {% endif %}
+                {% if policy.status == "approved" %}
+                <form method="post" action="/policies/{{ policy.id }}/publish"><button class="btn secondary" type="submit" data-confirm="Publish this policy version?">Publish</button></form>
+                {% endif %}
+                {% if policy.status != "archived" %}
+                <form method="post" action="/policies/{{ policy.id }}/archive"><button class="btn ghost" type="submit">Archive</button></form>
+                {% endif %}
+                <form method="post" action="/policies/{{ policy.id }}/clone"><button class="btn ghost" type="submit">Clone Draft</button></form>
+                <a class="btn ghost" href="/policy/reader?policy_id={{ policy.id }}" target="_blank">Preview</a>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="5"><div class="empty-state">No policy versions available.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="surface">
+    <div class="section-head"><h3>Template Repository</h3></div>
+    <form method="post" action="/policies/templates" class="form-grid" style="margin-bottom: 18px;">
+      <label>Template Code <input name="template_code" placeholder="TPL-ASSET-HANDOVER" required></label>
+      <label>Template Name <input name="template_name" placeholder="Asset Handover Note" required></label>
+      <label>Template Type
+        <select name="template_type">
+          <option value="policy">Policy</option>
+          <option value="agreement">Agreement</option>
+          <option value="return">Return</option>
+          <option value="abroad">Abroad</option>
+          <option value="exit_clearance">Exit Clearance</option>
+          <option value="disposal">Disposal</option>
+          <option value="custom">Custom</option>
+        </select>
+      </label>
+      <label style="display:flex; align-items:center; gap:8px; margin-top: 28px;"><input type="checkbox" name="active" checked> Active</label>
+      <label style="grid-column: 1 / -1;">Template HTML
+        <textarea name="html_content" required><h1>{{ employee_name }}</h1><p>Asset {{ asset_code }} is governed by {{ policy_title }} version {{ policy_version }}.</p></textarea>
+      </label>
+      <div><button class="btn" type="submit">Create Template</button></div>
+    </form>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Code</th><th>Name</th><th>Type</th><th>Status</th><th>Preview</th><th>Actions</th></tr></thead>
+        <tbody>
+          {% for item in templates %}
+          <tr>
+            <td>{{ item.template_code }}</td>
+            <td>{{ item.template_name }}</td>
+            <td>{{ item.template_type }}</td>
+            <td>{{ "Active" if item.active else "Inactive" }}</td>
+            <td><div class="help">{{ item.html_content[:120] }}{% if item.html_content|length > 120 %}...{% endif %}</div></td>
+            <td>
+              <div class="actions">
+                <a class="btn ghost" href="/policies/templates/{{ item.id }}/preview" target="_blank">Preview</a>
+                <form method="post" action="/policies/templates/{{ item.id }}/toggle">
+                  <button class="btn secondary" type="submit">{{ "Deactivate" if item.active else "Activate" }}</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6"><div class="empty-state">No templates available.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

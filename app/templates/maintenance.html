@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% set page_title = "Maintenance and Replacement" %}
+{% set page_subtitle = "Issue reporting, repair actions, closure and replacement-triggered fresh signing." %}
+{% block content %}
+<div class="stack">
+  <div class="summary-grid">
+    <div class="summary-tile"><div class="kicker">Tickets</div><div class="main">{{ tickets|length }}</div><div class="sub">Logged maintenance issues</div></div>
+    <div class="summary-tile"><div class="kicker">Available Assets</div><div class="main">{{ assets|length }}</div><div class="sub">Assets visible for ticketing</div></div>
+  </div>
+
+  <section class="surface">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Issue Intake</div>
+        <h3>Raise Ticket</h3>
+      </div>
+    </div>
+    <form method="post" class="form-grid">
+      <label>Asset
+        <select name="asset_id">{% for asset in assets %}<option value="{{ asset.id }}">{{ asset.asset_code }} - {{ asset.name }}</option>{% endfor %}</select>
+      </label>
+      <label>Issue Type <input name="issue_type" placeholder="Battery / Display / Keyboard" required></label>
+      <label style="grid-column: 1 / -1;">Description <textarea name="description" required></textarea></label>
+      <div class="actions" style="grid-column: 1 / -1;"><button class="btn primary" type="submit">Create Ticket</button></div>
+    </form>
+  </section>
+
+  <section class="surface">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Repair Workflow</div>
+        <h3>Ticket Register</h3>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>ID</th><th>Asset</th><th>Issue Type</th><th>Status</th><th>Notes</th><th>Action</th></tr></thead>
+        <tbody>
+          {% for ticket in tickets %}
+          <tr>
+            <td>#{{ ticket.id }}</td>
+            <td>{{ ticket.asset.asset_code }}<br><span class="help">{{ ticket.asset.name }}</span></td>
+            <td>{{ ticket.issue_type }}</td>
+            <td><span class="badge {% if ticket.status == 'closed' %}success{% elif ticket.status == 'replaced' %}info{% else %}warning{% endif %}">{{ ticket.status }}</span></td>
+            <td><div class="help">{{ ticket.description }}</div></td>
+            <td>
+              {% if current_user.role in ["hardware_admin", "super_admin"] %}
+              <a class="btn ghost" href="/maintenance/{{ ticket.id }}/update">📝 Update</a>
+              {% else %}
+              <span class="help">-</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+          {% if tickets|length == 0 %}
+          <tr><td colspan="6"><div class="empty-state">No maintenance tickets yet. Logged issues will appear here for repair and replacement tracking.</div></td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

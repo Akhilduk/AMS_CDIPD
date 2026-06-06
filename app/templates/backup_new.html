@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% set page_title = "Create Backup Allocation" %}
+{% set page_subtitle = "Issue temporary backup assets on a dedicated page for cleaner tracking." %}
+{% set page_actions = [{"href": "/backup", "label": "Backup Register", "variant": "secondary", "icon": "📋"}] %}
+{% block content %}
+<div class="stack">
+  <section class="surface">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Backup Issuance</div>
+        <h3>Create Backup Allocation</h3>
+      </div>
+    </div>
+    <form method="post" action="/backup" class="form-grid">
+      <label>Employee
+        <select name="employee_id" required>
+          {% for employee in employees %}
+          <option value="{{ employee.id }}">{{ employee.full_name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Primary Asset
+        <select name="primary_asset_id" required>
+          {% for asset in primary_assets %}
+          <option value="{{ asset.id }}">{{ asset.asset_code }} - {{ asset.name }} ({{ asset.status }})</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Backup Asset
+        <select name="backup_asset_id" required>
+          {% for asset in backup_assets %}
+          <option value="{{ asset.id }}">{{ asset.asset_code }} - {{ asset.name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Issue Date <input type="date" name="issue_date" required></label>
+      <label>Expected Return Date <input type="date" name="expected_return_date"></label>
+      <label style="grid-column: 1 / -1;">Reason
+        <textarea name="reason" rows="4" required placeholder="Why is the backup asset needed?"></textarea>
+      </label>
+      <div class="actions" style="grid-column: 1 / -1; justify-content: flex-end;">
+        <button class="btn primary" type="submit">Issue Backup Asset</button>
+      </div>
+    </form>
+  </section>
+</div>
+{% endblock %}

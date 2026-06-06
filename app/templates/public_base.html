@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ title or brand.app_name }}</title>
+  <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+  <div class="public-shell">
+    <header class="public-header">
+      <div class="inner">
+        <a href="/" class="brand-row">
+          <div>
+            <div class="kicker">CDIPD</div>
+            <div class="brand" style="color: var(--text); margin-top: 6px;">Asset Management</div>
+          </div>
+        </a>
+        <nav class="public-nav">
+          <a class="nav-link" href="/">Home</a>
+          <a class="nav-link" href="/login">Login</a>
+          {% if policy_sample_available %}
+          <a class="nav-link" href="/policy/reader">Policy Reader</a>
+          {% endif %}
+          <button class="btn ghost theme-toggle" type="button" data-theme-toggle>Theme: Auto</button>
+        </nav>
+      </div>
+    </header>
+
+    <main class="public-main">
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="public-footer">
+      <div class="inner">{{ brand.org_name }}</div>
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      const key = "cdipd-theme";
+      const root = document.body;
+      const button = document.querySelector("[data-theme-toggle]");
+      const states = ["auto", "light", "night"];
+      const apply = (value) => {
+        if (value === "auto") {
+          root.removeAttribute("data-theme");
+        } else {
+          root.setAttribute("data-theme", value);
+        }
+        if (button) {
+          const label = value.charAt(0).toUpperCase() + value.slice(1);
+          button.textContent = "Theme: " + label;
+        }
+      };
+      let current = localStorage.getItem(key) || "auto";
+      apply(current);
+      if (button) {
+        button.addEventListener("click", function () {
+          current = states[(states.indexOf(current) + 1) % states.length];
+          localStorage.setItem(key, current);
+          apply(current);
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

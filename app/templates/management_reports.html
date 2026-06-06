@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% set page_title = "Management Reports" %}
+{% set page_subtitle = "" %}
+{% block content %}
+<div class="stack">
+  <div class="summary-grid">
+    {% for card in summary_cards %}
+    <a class="summary-tile" href="{{ card.href }}"><div class="kicker">{{ card.label }}</div><div class="main">{{ card.value }}</div><div class="sub">Open filtered report</div></a>
+    {% endfor %}
+  </div>
+
+  <section class="surface">
+    <div class="section-head">
+      <h3>Idle Asset Review</h3>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Asset</th><th>Location</th><th>Holder</th><th>Recommendation</th></tr></thead>
+        <tbody>
+          {% for asset in management.idle_assets %}
+          <tr>
+            <td>{{ asset.asset_code }} - {{ asset.name }}</td>
+            <td>{{ asset.location.name }}</td>
+            <td>{{ holder_map.get(asset.id, "-") }}</td>
+            <td>Allocate or retain as reserve</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4"><div class="empty-state">No idle assets available.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="surface">
+    <div class="section-head">
+      <h3>Repair and Risk Assets</h3>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Asset</th><th>Status</th><th>Recommendation</th></tr></thead>
+        <tbody>
+          {% for asset in management.risk_assets %}
+          <tr>
+            <td>{{ asset.asset_code }} - {{ asset.name }}</td>
+            <td>{{ asset.status }}</td>
+            <td>{% if asset.status == "under_maintenance" %}Repair or replace{% elif asset.status == "liability_hold" %}Close liability{% else %}Review allocation{% endif %}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="3"><div class="empty-state">No risk assets available.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="surface">
+    <div class="section-head">
+      <h3>Executive Workflows</h3>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Type</th><th>Reference</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for item in management.travel_requests %}
+          <tr><td>Travel</td><td>{{ item.employee.full_name }} - {{ item.asset.asset_code }}</td><td>{{ item.status }}</td></tr>
+          {% endfor %}
+          {% for item in management.returns %}
+          <tr><td>Return</td><td>{{ item.employee.full_name }} - {{ item.asset.asset_code }}</td><td>{{ item.exit_clearance_status }}</td></tr>
+          {% endfor %}
+          {% for item in management.tickets %}
+          <tr><td>Maintenance</td><td>#{{ item.id }} - {{ item.asset.asset_code }}</td><td>{{ item.status }}</td></tr>
+          {% endfor %}
+          {% if management.travel_requests|length == 0 and management.returns|length == 0 and management.tickets|length == 0 %}
+          <tr><td colspan="3"><div class="empty-state">No management workflow records available.</div></td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="surface">
+    <div class="section-head">
+      <h3>Disposal and Procurement</h3>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Type</th><th>Reference</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for item in management.disposals %}
+          <tr><td>Disposal</td><td>{{ item.asset.asset_code }}</td><td>{{ item.status }}</td></tr>
+          {% endfor %}
+          {% for item in management.procurement %}
+          <tr><td>Procurement</td><td>{{ item.category_name }} - {{ item.department }}</td><td>{{ item.suggested_procurement }} suggested</td></tr>
+          {% endfor %}
+          {% if management.disposals|length == 0 and management.procurement|length == 0 %}
+          <tr><td colspan="3"><div class="empty-state">No disposal or procurement items available.</div></td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="surface">
+    <div class="section-head">
+      <h3>Backup and Verification</h3>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Type</th><th>Reference</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for item in management.backup_allocations %}
+          <tr><td>Backup</td><td>{{ item.employee.full_name }} / {{ item.backup_asset.asset_code }}</td><td>{{ item.status }}</td></tr>
+          {% endfor %}
+          {% for item in management.verification_campaigns %}
+          <tr><td>Verification</td><td>{{ item.campaign_name }}</td><td>{{ item.status }}</td></tr>
+          {% endfor %}
+          {% if management.backup_allocations|length == 0 and management.verification_campaigns|length == 0 %}
+          <tr><td colspan="3"><div class="empty-state">No backup or verification items available.</div></td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

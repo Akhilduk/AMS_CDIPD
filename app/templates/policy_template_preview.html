@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% set page_title = "Template Preview" %}
+{% set page_subtitle = "Rendered sample output for a policy document template." %}
+{% block content %}
+<div class="stack">
+  <section class="surface">
+    <div class="section-head">
+      <div>
+        <h3>{{ template_item.template_name }}</h3>
+        <div class="help">{{ template_item.template_code }} | {{ template_item.template_type }} | {{ "Active" if template_item.active else "Inactive" }}</div>
+      </div>
+      <a class="btn ghost" href="/policies">Back to Policies</a>
+    </div>
+    <div class="split-card">
+      <div class="surface" style="background:#f8fafc;">
+        <div class="section-head"><h3>Rendered Preview</h3></div>
+        <div class="document-block">{{ rendered_html|safe }}</div>
+      </div>
+      <div class="surface">
+        <div class="section-head"><h3>Sample Data</h3></div>
+        <table>
+          <thead><tr><th>Placeholder</th><th>Value</th></tr></thead>
+          <tbody>
+            {% for key, value in preview_context.items() %}
+            <tr><td class="mono">{{ "{{ " }}{{ key }}{{ " }}" }}</td><td>{{ value }}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="surface">
+    <div class="section-head"><h3>Source HTML</h3></div>
+    <pre style="white-space: pre-wrap; word-break: break-word; margin: 0;">{{ template_item.html_content }}</pre>
+  </section>
+</div>
+{% endblock %}

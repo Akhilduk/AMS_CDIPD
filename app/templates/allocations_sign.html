@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="stack">
+  <section class="form-card">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Digital Signature</div>
+        <h3>Sign Allocation Document</h3>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h4 class="form-section-title">Asset Allocation Details</h4>
+      <div class="panel-note">
+        <strong>Asset:</strong> {{ allocation.asset.asset_code }} — {{ allocation.asset.name }}<br>
+        <strong>Serial No:</strong> {{ allocation.asset.serial_no or "N/A" }}<br>
+        <strong>Category:</strong> {{ allocation.asset.category or "N/A" }}<br>
+        <strong>Approved Policy:</strong> {% if allocation.policy %}{{ allocation.policy.version }} — {{ allocation.policy.title }}{% else %}Default{% endif %}
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h4 class="form-section-title">Agreement</h4>
+      <div class="panel-note">
+        <p>By signing this allocation, you acknowledge and agree to:</p>
+        <ul style="margin: 12px 0 0 20px;">
+          <li>Receive and accept the above asset in good working condition</li>
+          <li>Use the asset solely for authorized business purposes</li>
+          <li>Return the asset upon termination or on demand</li>
+          <li>Report any damage, loss, or theft immediately</li>
+          <li>Comply with all organizational asset policies</li>
+        </ul>
+      </div>
+      <a class="btn ghost" href="/policy/reader?allocation_id={{ allocation.id }}" target="_blank">📖 Read Full Policy</a>
+    </div>
+
+    <form method="post" class="form-grid">
+      {% set otp_info = otp_state.get(allocation.id) %}
+      
+      <div class="form-section">
+        <h4 class="form-section-title">OTP Verification</h4>
+        
+        {% if not otp_info %}
+        <div class="panel-note" style="background: var(--surface-soft); border-left: 3px solid var(--warning); padding: 12px; margin-bottom: 12px;">
+          Request an OTP to complete the signature. This code will be sent to your registered phone.
+        </div>
+        <div class="actions">
+          <form method="post" action="/allocations/{{ allocation.id }}/send-otp" style="display: inline;">
+            <button class="btn secondary" type="submit">📤 Request OTP</button>
+          </form>
+        </div>
+        {% else %}
+        <div class="panel-note" style="background: var(--surface-soft); border-left: 3px solid var(--success); padding: 12px; margin-bottom: 12px;">
+          OTP has been sent. Enter it below to complete the signature.<br>
+          <strong>Expires at:</strong> {{ otp_info.expires_at }}
+          {% if otp_info.otp_code and demo_otp_mode %}<br><strong style="color: var(--danger);">Demo OTP:</strong> {{ otp_info.otp_code }}{% endif %}
+          {% if otp_info.cooldown_remaining > 0 %}<br>Resend available in <span class="countdown" data-countdown="{{ otp_info.resend_available_at }}">{{ otp_info.cooldown_remaining }}s</span>{% endif %}
+        </div>
+
+        <label>6-Digit OTP
+          <input type="text" name="otp_code" pattern="[0-9]{6}" maxlength="6" inputmode="numeric" placeholder="000000" required autofocus>
+        </label>
+        {% endif %}
+      </div>
+
+      <div class="actions" style="grid-column: 1 / -1; justify-content: flex-end; gap: 8px; margin-top: 12px;">
+        <a class="btn secondary" href="/allocations">← Back</a>
+        {% if otp_info %}
+        <button class="btn primary" type="submit" data-confirm="Sign this allocation with your OTP?">✓ Sign & Confirm</button>
+        {% else %}
+        <span class="help">Request OTP above to continue</span>
+        {% endif %}
+      </div>
+    </form>
+  </section>
+</div>
+{% endblock %}

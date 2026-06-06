@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% set page_title = "Numbering Settings" %}
+{% set page_subtitle = "" %}
+{% block content %}
+<div class="stack">
+  <section class="surface">
+    <div class="section-head">
+      <h3>Prefix Configuration</h3>
+    </div>
+    <form method="post" class="form-grid">
+      <label>Asset Prefix <input name="asset_prefix" value="{{ setting.asset_prefix }}" required></label>
+      <label>Document Prefix <input name="document_prefix" value="{{ setting.document_prefix }}" required></label>
+      <label>Ticket Prefix <input name="ticket_prefix" value="{{ setting.ticket_prefix }}" required></label>
+      <label>Return Prefix <input name="return_prefix" value="{{ setting.return_prefix }}" required></label>
+      <label style="grid-column: 1 / -1;">Policy Prefix <input name="policy_prefix" value="{{ setting.policy_prefix }}" required></label>
+      <div class="actions" style="grid-column: 1 / -1;">
+        <button class="btn primary" type="submit">Update Prefixes</button>
+      </div>
+    </form>
+  </section>
+</div>
+{% endblock %}

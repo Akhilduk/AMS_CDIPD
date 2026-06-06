@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% set page_title = "Return Detail" %}
+{% set page_subtitle = "Review return case, validate the asset, and complete clearance workflows from a focused page." %}
+{% set page_actions = [{"href": "/returns", "label": "Return Register", "variant": "secondary", "icon": "◀️"}] %}
+{% block content %}
+<div class="stack">
+  <section class="surface">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Return Case</div>
+        <h3>{{ item.asset.asset_code }} — {{ item.employee.full_name }}</h3>
+      </div>
+    </div>
+    <div class="grid-cards">
+      <div class="kpi-card">
+        <div class="number">Status</div>
+        <div class="label">{{ item.status }}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="number">Clearance</div>
+        <div class="label">{{ item.exit_clearance_status }}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="number">Liability</div>
+        <div class="label">{{ item.liability_amount or 0 }}</div>
+      </div>
+    </div>
+
+    <div class="form-grid" style="margin-top: 20px;">
+      <div class="policy-summary">
+        <h4>Return Summary</h4>
+        <p><strong>Asset:</strong> {{ item.asset.asset_code }} — {{ item.asset.name }}</p>
+        <p><strong>Employee:</strong> {{ item.employee.full_name }}</p>
+        <p><strong>Reason:</strong> {{ item.reason }}</p>
+        <p><strong>Requested At:</strong> {{ item.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+      </div>
+      <div class="policy-summary">
+        <h4>Verification Notes</h4>
+        <p><strong>QR Verified:</strong> {{ "Yes" if item.qr_verified else "No" }}</p>
+        <p><strong>Condition Notes:</strong><br>{{ item.condition_notes or "Not recorded" }}</p>
+        <p><strong>Asset Status:</strong> {{ item.asset.status }}</p>
+      </div>
+    </div>
+
+    <section class="surface" style="margin-top: 18px;">
+      <div class="section-head"><h4>Verification Actions</h4></div>
+      {% if current_user.role in ["hardware_admin", "hr_admin", "super_admin"] %}
+      <form method="post" action="/returns/{{ item.id }}/verify" class="form-grid">
+        <label>Condition Notes <textarea name="condition_notes" rows="3" required>{{ item.condition_notes or "" }}</textarea></label>
+        <label><input type="checkbox" name="qr_verified" value="1" {% if item.qr_verified %}checked{% endif %}> QR verified</label>
+        <label>Liability Amount <input type="number" name="liability_amount" value="{{ item.liability_amount or 0 }}"></label>
+        <label>Exit Clearance Status
+          <select name="exit_clearance_status">
+            <option value="pending" {% if item.exit_clearance_status == "pending" %}selected{% endif %}>Pending</option>
+            <option value="completed" {% if item.exit_clearance_status == "completed" %}selected{% endif %}>Completed</option>
+            <option value="liability_open" {% if item.exit_clearance_status == "liability_open" %}selected{% endif %}>Liability Open</option>
+          </select>
+        </label>
+        <div class="actions" style="grid-column: 1 / -1; justify-content: flex-end;">
+          <button class="btn primary" type="submit" data-confirm="Finalize return verification and update clearance status?">Save Verification</button>
+        </div>
+      </form>
+      {% else %}
+      <div class="empty-state">Only administrators can complete the physical verification and clearance workflow.</div>
+      {% endif %}
+    </section>
+
+    <section class="surface" style="margin-top: 18px;">
+      <div class="section-head"><h4>Documents</h4></div>
+      <div class="actions">
+        {% set return_document = document_map.get(("return", "return:" ~ item.id)) %}
+        {% set no_dues_document = document_map.get(("exit_clearance", "return:" ~ item.id ~ ":no-dues")) %}
+        {% if return_document %}
+        <a class="btn ghost" href="/documents/{{ return_document.id }}/view">View Return Document</a>
+        {% endif %}
+        {% if no_dues_document %}
+        <a class="btn ghost" href="/documents/{{ no_dues_document.id }}/view">View No-Dues Document</a>
+        {% endif %}
+        {% if not return_document and not no_dues_document %}
+        <span class="help">No documents generated yet.</span>
+        {% endif %}
+      </div>
+    </section>
+  </section>
+</div>
+{% endblock %}

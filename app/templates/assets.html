@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% set page_title = "Asset Inventory" %}
+{% set page_subtitle = "Manual registration, bulk upload, QR generation and asset registry visibility." %}
+{% block content %}
+<div class="stack">
+  <div class="summary-grid">
+    <div class="summary-tile"><div class="kicker">Registered Assets</div><div class="main">{{ assets|length }}</div><div class="sub">Current inventory records</div></div>
+    <div class="summary-tile"><div class="kicker">Categories</div><div class="main">{{ categories|length }}</div><div class="sub">Available asset classes</div></div>
+    <div class="summary-tile"><div class="kicker">Locations</div><div class="main">{{ locations|length }}</div><div class="sub">Assignable operating locations</div></div>
+  </div>
+
+  {% if current_user.role != "auditor" %}
+  <section class="surface">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Inventory Intake</div>
+        <h3>Register Asset</h3>
+      </div>
+    </div>
+    <form method="post" class="form-grid">
+      <label>Asset Name <input name="name" minlength="3" required></label>
+      <label>Model <input name="model" minlength="2" required></label>
+      <label>Serial Number <input name="serial_number" minlength="4" required></label>
+      <label>Category
+        <select name="category_id">{% for item in categories %}<option value="{{ item.id }}">{{ item.name }}</option>{% endfor %}</select>
+      </label>
+      <label>Vendor
+        <select name="vendor_id">{% for item in vendors %}<option value="{{ item.id }}">{{ item.name }}</option>{% endfor %}</select>
+      </label>
+      <label>Location
+        <select name="location_id">{% for item in locations %}<option value="{{ item.id }}">{{ item.name }}</option>{% endfor %}</select>
+      </label>
+      <label style="grid-column: 1 / -1;">Specification <textarea name="specification"></textarea></label>
+      <div class="actions" style="grid-column: 1 / -1;"><button class="btn primary" type="submit">Create Asset</button></div>
+    </form>
+    <form method="post" action="/assets/bulk-upload" enctype="multipart/form-data" class="actions">
+      <input type="file" name="file" accept=".csv" required>
+      <button class="btn secondary" type="submit">Bulk Upload CSV</button>
+    </form>
+    <div class="help">CSV columns: `name,model,serial_number,category_id,vendor_id,location_id,specification`</div>
+  </section>
+  {% endif %}
+
+  <section class="surface">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Asset Register</div>
+        <h3>Inventory Visibility</h3>
+      </div>
+      <div class="toolbar">
+        <input class="search-box" data-table-search="assets-table" placeholder="Search code, name, model, serial">
+        <select data-table-status="assets-table">
+          <option value="">All statuses</option>
+          <option value="available">Available</option>
+          <option value="active">Active</option>
+          <option value="under_maintenance">Under maintenance</option>
+          <option value="pending_allocation">Pending allocation</option>
+        </select>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table id="assets-table">
+        <thead><tr><th>Code</th><th>Asset</th><th>Status</th><th>QR</th></tr></thead>
+        <tbody>
+          {% for asset in assets %}
+          <tr data-status="{{ asset.status }}">
+            <td class="mono">{{ asset.asset_code }}</td>
+            <td>{{ asset.name }}<br><span class="help">{{ asset.model }} | {{ asset.serial_number }}</span></td>
+            <td><span class="badge">{{ asset.status }}</span><br><span class="help">{{ asset.location.name }}</span></td>
+            <td>{% if asset.qr_path %}<img class="qr" src="/storage/{{ asset.qr_path }}" alt="QR">{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

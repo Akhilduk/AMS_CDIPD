@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% set page_title = "Role Management" %}
+{% set page_subtitle = "Role registry for enterprise RBAC expansion." %}
+{% block content %}
+<div class="stack">
+  <div class="summary-grid">
+    <div class="summary-tile"><div class="kicker">Roles</div><div class="main">{{ roles|length }}</div><div class="sub">Configured role definitions</div></div>
+    <div class="summary-tile"><div class="kicker">Active Roles</div><div class="main">{{ roles|selectattr("active")|list|length }}</div><div class="sub">Assignable within admin screens</div></div>
+  </div>
+
+  <div class="split-card">
+    <section class="surface">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Create Role</div>
+          <h3>New Role</h3>
+        </div>
+      </div>
+      <form method="post" class="form-grid">
+        <label>Role Code <input name="code" placeholder="compliance_admin" pattern="[a-z_]+" required></label>
+        <label>Role Name <input name="name" placeholder="Compliance Admin" required></label>
+        <label style="grid-column: 1 / -1;">Description <textarea name="description" rows="3" placeholder="Describe the responsibility and scope."></textarea></label>
+        <div class="actions"><button class="btn primary" type="submit">Create Role</button></div>
+      </form>
+    </section>
+
+    <section class="surface">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Next Step</div>
+          <h3>Permission Mapping</h3>
+        </div>
+      </div>
+      <div class="panel-note">
+        New roles are created empty by design. Open the permission matrix after creating the role and explicitly grant module actions before assigning it to users.
+      </div>
+      <div class="actions" style="margin-top: 16px;">
+        <a class="btn secondary" href="/admin/permissions">Open Permission Matrix</a>
+      </div>
+    </section>
+  </div>
+
+  <section class="surface">
+    <div class="section-head">
+      <h3>Configured Roles</h3>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Code</th><th>Name</th><th>Description</th><th>Users</th><th>Permissions</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for role in roles %}
+          <tr>
+            <td>{{ role.code }}</td>
+            <td>{{ role.name }}</td>
+            <td>{{ role.description or "-" }}</td>
+            <td>{{ stats[role.code].users }}</td>
+            <td>{{ stats[role.code].permissions }}</td>
+            <td><span class="status {{ 'active' if role.active else 'pending' }}">{{ 'Active' if role.active else 'Inactive' }}</span></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

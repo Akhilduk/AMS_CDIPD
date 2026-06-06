@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% set page_title = "Verification Campaigns" %}
+{% set page_subtitle = "Create audit campaigns and record execution outcomes by asset, holder, and location." %}
+{% block content %}
+<div class="stack">
+  <div class="split-card">
+    <section class="surface">
+      <div class="section-head"><h3>Create Campaign</h3></div>
+      <form method="post" action="/verification/campaigns" class="form-grid">
+        <label>Campaign Name <input name="campaign_name" required></label>
+        <label>Asset Category
+          <select name="asset_category"><option value="">All</option>{% for category in categories %}<option value="{{ category.name }}">{{ category.name }}</option>{% endfor %}</select>
+        </label>
+        <label>Department
+          <select name="department"><option value="">All</option>{% for department in departments %}<option value="{{ department }}">{{ department }}</option>{% endfor %}</select>
+        </label>
+        <label>Location
+          <select name="location"><option value="">All</option>{% for location in locations %}<option value="{{ location }}">{{ location }}</option>{% endfor %}</select>
+        </label>
+        <label>Start Date <input type="date" name="start_date"></label>
+        <label>End Date <input type="date" name="end_date"></label>
+        <label>Mode
+          <select name="verification_mode"><option value="qr_scan">QR Scan</option><option value="manual_confirmation">Manual Confirmation</option><option value="bulk_upload">Bulk Upload</option></select>
+        </label>
+        <div class="actions" style="grid-column: 1 / -1;"><button class="btn primary" type="submit">Create Campaign</button></div>
+      </form>
+    </section>
+
+    <section class="surface">
+      <div class="section-head"><h3>Record Execution</h3></div>
+      <form method="post" action="/verification/executions" class="form-grid">
+        <label>Campaign
+          <select name="campaign_id">{% for item in campaigns %}<option value="{{ item.id }}">{{ item.campaign_name }} ({{ item.status }})</option>{% endfor %}</select>
+        </label>
+        <label>Asset
+          <select name="asset_id">{% for asset in assets %}<option value="{{ asset.id }}">{{ asset.asset_code }} - {{ asset.name }}</option>{% endfor %}</select>
+        </label>
+        <label>Result
+          <select name="result"><option value="verified">Verified</option><option value="not_found">Not Found</option><option value="mismatch">Mismatch</option><option value="damaged">Damaged</option><option value="location_changed">Location Changed</option><option value="holder_mismatch">Holder Mismatch</option></select>
+        </label>
+        <label>Condition Confirmed <input name="condition_confirmed"></label>
+        <label>Location Confirmed <input name="location_confirmed"></label>
+        <label>Holder Confirmed <input name="holder_confirmed"></label>
+        <label style="grid-column: 1 / -1;">Deviation Notes <textarea name="deviation_notes"></textarea></label>
+        <div class="actions" style="grid-column: 1 / -1;"><button class="btn secondary" type="submit">Record Execution</button></div>
+      </form>
+    </section>
+  </div>
+
+  <section class="surface">
+    <div class="section-head"><h3>Campaign Register</h3></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Campaign</th><th>Scope</th><th>Mode</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for item in campaigns %}
+          <tr><td>{{ item.campaign_name }}</td><td>{{ item.asset_category or "All" }} / {{ item.department or "All" }} / {{ item.location or "All" }}</td><td>{{ item.verification_mode }}</td><td>{{ item.status }}</td></tr>
+          {% else %}
+          <tr><td colspan="4"><div class="empty-state">No verification campaigns yet.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="surface">
+    <div class="section-head"><h3>Execution Register</h3></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Campaign</th><th>Asset</th><th>Result</th><th>Verifier</th><th>Deviation</th></tr></thead>
+        <tbody>
+          {% for item in executions %}
+          <tr><td>{{ item.campaign.campaign_name }}</td><td>{{ item.asset.asset_code }}</td><td>{{ item.result }}</td><td>{{ item.verified_by.full_name }}</td><td>{{ item.deviation_notes or "-" }}</td></tr>
+          {% else %}
+          <tr><td colspan="5"><div class="empty-state">No verification executions yet.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

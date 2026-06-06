@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="stack">
+  <section class="form-card">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Repair Resolution</div>
+        <h3>Update Maintenance Ticket</h3>
+      </div>
+    </div>
+
+    <form method="post" class="form-grid">
+      <div class="form-section">
+        <h4 class="form-section-title">Ticket Details</h4>
+        <div class="panel-note">
+          <strong>Issue:</strong> {{ ticket.issue_type }}<br>
+          <strong>Asset:</strong> {{ ticket.asset.asset_code }} — {{ ticket.asset.name }}<br>
+          <strong>Reported by:</strong> {{ ticket.raised_by.full_name }}<br>
+          <strong>Description:</strong> {{ ticket.description }}
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h4 class="form-section-title">Resolution Action</h4>
+        <label>Status
+          <select name="status" required>
+            <option value="">Select resolution status</option>
+            <option value="in_progress" {% if ticket.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+            <option value="closed" {% if ticket.status == 'closed' %}selected{% endif %}>Repair Closed</option>
+            <option value="replaced" {% if ticket.status == 'replaced' %}selected{% endif %}>Replace Asset</option>
+          </select>
+        </label>
+        <label>Resolution Notes <textarea name="resolution_notes" rows="4" placeholder="Describe the action taken...">{{ ticket.resolution_notes or "" }}</textarea></label>
+      </div>
+
+      <div class="form-section" id="replacement-section" style="display: none;">
+        <h4 class="form-section-title">Replacement Asset</h4>
+        <label>Select Replacement Asset
+          <select name="replacement_asset_id">
+            <option value="">-- Choose an available asset --</option>
+            {% for asset in assets %}
+            <option value="{{ asset.id }}">{{ asset.asset_code }} — {{ asset.name }}</option>
+            {% endfor %}
+          </select>
+        </label>
+      </div>
+
+      <div class="actions" style="grid-column: 1 / -1; justify-content: flex-end; gap: 8px; margin-top: 12px;">
+        <a class="btn secondary" href="/maintenance">← Back</a>
+        <button class="btn primary" type="submit" data-confirm="Apply this maintenance update?">✓ Update Ticket</button>
+      </div>
+    </form>
+  </section>
+</div>
+
+<script>
+  document.querySelector('[name="status"]').addEventListener('change', function() {
+    document.getElementById('replacement-section').style.display = 
+      this.value === 'replaced' ? 'grid' : 'none';
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends "public_base.html" if is_public_reader else "base.html" %}
+{% set title = "Policy Reader - CDIPD Asset Management" %}
+{% set page_title = "Policy Reader" %}
+{% set page_subtitle = "" %}
+{% block content %}
+<div class="stack">
+  <section class="surface">
+    <div class="section-head">
+      <div>
+        <div class="kicker">{{ policy_meta.document_code }}</div>
+        <div class="title" style="font-size: 1.8rem; margin-top: 8px;">{{ policy_meta.title }}</div>
+        <div class="help" style="margin-top: 8px;">{{ policy_meta.org_name }}</div>
+        <div class="help">{{ policy_meta.unit_name }}</div>
+        <div class="help">{{ policy_meta.unit_note }}</div>
+        <div class="help" style="margin-top: 10px;">Format ID {{ policy_meta.format_id }} | Version {{ policy_meta.version }} | Released {{ policy_meta.release_date }}</div>
+        {% if policy %}
+        <div class="help" style="margin-top: 10px;">Policy Master {{ policy.policy_master.policy_code if policy.policy_master else "-" }} | Version {{ policy.version }} | Status {{ policy.status }}</div>
+        {% endif %}
+      </div>
+      <div class="actions">
+        <a class="btn secondary" href="/policy/current" target="_blank">Open PDF</a>
+        {% if not is_public_reader %}
+        <a class="btn secondary" href="/allocations">Back</a>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+  <section class="surface">
+    <div class="panel-note">{{ policy_meta.disclaimer }}</div>
+  </section>
+
+  {% if allocation %}
+  <section class="surface">
+    <div class="section-head">
+      <h3>Allocation Agreement Context</h3>
+    </div>
+    <div class="document-grid">
+      <div class="document-block">
+        <div class="eyebrow">Employee</div>
+        <div style="font-weight:700; margin-top: 8px;">{{ allocation.employee.full_name }}</div>
+        <div class="help">{{ allocation.employee.employee_code }}</div>
+      </div>
+      <div class="document-block">
+        <div class="eyebrow">Asset</div>
+        <div style="font-weight:700; margin-top: 8px;">{{ allocation.asset.asset_code }} - {{ allocation.asset.name }}</div>
+        <div class="help">{{ allocation.asset.model }} | {{ allocation.asset.serial_number }}</div>
+      </div>
+      <div class="document-block">
+        <div class="eyebrow">Location</div>
+        <div style="font-weight:700; margin-top: 8px;">{{ allocation.asset.location.name }}</div>
+      </div>
+      <div class="document-block">
+        <div class="eyebrow">Policy Version</div>
+        <div style="font-weight:700; margin-top: 8px;">{{ policy.version if policy else policy_meta.version }}</div>
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  {% if templates %}
+  <section class="surface">
+    <div class="section-head">
+      <h3>Linked Document Templates</h3>
+    </div>
+    <div class="document-grid">
+      {% for item in templates %}
+      <div class="document-block">
+        <div class="eyebrow">{{ item.template_type }}</div>
+        <div style="font-weight:700; margin-top: 8px;">{{ item.template_name }}</div>
+        <div class="help" style="margin-top: 8px;">{{ item.template_code }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  {% for section in sections %}
+  <section class="surface">
+    <div class="section-head">
+      <h3>{{ section.title }}</h3>
+    </div>
+    {% for paragraph in section.get("paragraphs", []) %}
+    <div class="help" style="margin-bottom: 10px;">{{ paragraph }}</div>
+    {% endfor %}
+    {% if section.get("bullets") %}
+    <ul style="margin: 0; padding-left: 20px; color: var(--text-soft);">
+      {% for item in section.get("bullets", []) %}
+      <li style="margin-bottom: 10px;">{{ item }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </section>
+  {% endfor %}
+</div>
+{% endblock %}

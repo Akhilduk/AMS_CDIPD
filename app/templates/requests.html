@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% set page_title = "Request History" %}
+{% set page_subtitle = "" %}
+{% block content %}
+<div class="stack">
+  <section class="surface">
+    <div class="section-head">
+      <h3>My Request Timeline</h3>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Date</th><th>Type</th><th>Reference</th><th>Status</th><th>Notes</th><th>Open</th></tr></thead>
+        <tbody>
+          {% for item in history %}
+          <tr>
+            <td>{{ item.created_at.strftime("%Y-%m-%d") }}</td>
+            <td>{{ item.type }}</td>
+            <td>{{ item.reference }}</td>
+            <td>{{ item.status }}</td>
+            <td>{{ item.remarks }}</td>
+            <td><a href="{{ item.link }}">Open</a></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6"><div class="empty-state">No request history available.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

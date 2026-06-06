@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% set page_title = "Allocations" %}
+{% set page_subtitle = "" %}
+{% block content %}
+<div class="stack">
+  {% if current_user.role in ["hardware_admin", "super_admin"] %}
+  <section class="surface">
+    <div class="section-head">
+      <h3>New Allocation</h3>
+    </div>
+    <form method="post" class="form-grid">
+      <label>Asset
+        <select name="asset_id">{% for asset in assets %}<option value="{{ asset.id }}">{{ asset.asset_code }} - {{ asset.name }}</option>{% endfor %}</select>
+      </label>
+      <label>Employee
+        <select name="employee_id">{% for employee in employees %}<option value="{{ employee.id }}">{{ employee.full_name }}</option>{% endfor %}</select>
+      </label>
+      <label style="grid-column: 1 / -1;">Remarks <textarea name="remarks"></textarea></label>
+      <div class="actions" style="grid-column: 1 / -1;"><button class="btn primary" type="submit">Submit</button></div>
+    </form>
+  </section>
+  {% endif %}
+
+  {% if current_user.role == "employee" and policy_sample_available %}
+  <section class="surface">
+    <div class="section-head">
+      <h3>Policy and Agreement</h3>
+      <div class="actions">
+        <a class="btn secondary" href="/policy/reader" target="_blank">Reader</a>
+        <a class="btn secondary" href="{{ policy_sample_url }}" target="_blank">PDF</a>
+      </div>
+    </div>
+    {% if active_policy %}
+    <div class="help" style="margin-bottom: 14px;">{{ active_policy.title }} - Version {{ active_policy.version }}</div>
+    {% endif %}
+    <div class="stack" style="gap: 10px;">
+      {% for item in policy_terms %}
+      <div class="help">{{ loop.index }}. {{ item }}</div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <section class="surface">
+    <div class="section-head">
+      <h3>Allocation Register</h3>
+      <div class="toolbar">
+        <input class="search-box" data-table-search="allocations-table" placeholder="Search">
+        <select data-table-status="allocations-table">
+          <option value="">All</option>
+          <option value="submitted">Submitted</option>
+          <option value="pending_signature">Pending signature</option>
+          <option value="signed">Signed</option>
+          <option value="sent_back">Sent back</option>
+          <option value="rejected">Rejected</option>
+        </select>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table id="allocations-table">
+        <thead><tr><th>Asset</th><th>Employee</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>
+          {% for item in allocations %}
+          <tr data-status="{{ item.status }}">
+            <td>{{ item.asset.asset_code }}<br><span class="help">{{ item.asset.name }}</span></td>
+            <td>{{ item.employee.full_name }}</td>
+            <td><span class="badge {% if item.status == 'signed' %}success{% elif item.status == 'sent_back' %}danger{% elif item.status == 'rejected' %}danger{% else %}warning{% endif %}">{{ item.status }}</span></td>
+            <td>
+              {% if current_user.role in ["hr_admin", "super_admin"] and item.status in ["submitted", "sent_back"] %}
+              <a class="btn ghost" href="/allocations/{{ item.id }}/decision">📋 Decide</a>
+              {% elif current_user.role == "employee" and item.status == "pending_signature" %}
+              <a class="btn primary" href="/allocations/{{ item.id }}/sign">✍ Sign</a>
+              <a class="btn ghost" href="/policy/reader?allocation_id={{ item.id }}" target="_blank">📖 Agreement</a>
+              {% elif item.status == "signed" %}
+              {% set doc = document_map.get(item.id) %}
+              {% if doc %}
+              <a class="btn ghost" href="/documents/{{ doc.id }}/view">👁 View</a>
+              {% else %}
+              <span class="help">✓ Signed</span>
+              {% endif %}
+              {% else %}
+              <span class="help">-</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4"><div class="empty-state">No allocations available.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if demo_otp_mode %}
+    <div class="panel-note" style="margin-top: 14px;">Demo OTP mode is enabled.</div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

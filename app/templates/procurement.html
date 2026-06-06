@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% set page_title = "Procurement Planning" %}
+{% set page_subtitle = "Forecast shortages, replacements due, reusable stock, and suggested procurement." %}
+{% block content %}
+<div class="stack">
+  <section class="surface">
+    <div class="section-head"><h3>Generate Procurement Plan</h3></div>
+    <form method="post" class="form-grid">
+      <label>Category <select name="category_name">{% for category in categories %}<option value="{{ category.name }}">{{ category.name }}</option>{% endfor %}</select></label>
+      <label>Department <input name="department" value="CDIPD" required></label>
+      <label>Forecast Period <select name="forecast_period_months"><option value="3">3 Months</option><option value="6">6 Months</option><option value="12">12 Months</option></select></label>
+      <label>Expected Demand <input type="number" name="expected_demand" value="0"></label>
+      <label>Replacement Due <input type="number" name="replacement_due" value="0"></label>
+      <label>Available Reusable Stock <input type="number" name="available_reusable_stock" value="0"></label>
+      <label>Estimated Budget <input type="number" name="estimated_budget" value="0"></label>
+      <div class="actions" style="grid-column: 1 / -1;"><button class="btn primary" type="submit">Generate Plan</button></div>
+    </form>
+  </section>
+  <section class="surface">
+    <div class="section-head"><h3>Current Stock Snapshot</h3></div>
+    <div class="summary-grid">
+      {% for category_name, count in stock_map.items() %}
+      <div class="summary-tile"><div class="kicker">{{ category_name }}</div><div class="main">{{ count }}</div><div class="sub">Current assets</div></div>
+      {% endfor %}
+    </div>
+  </section>
+  <section class="surface">
+    <div class="section-head"><h3>Procurement Plans</h3></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>ID</th><th>Category</th><th>Period</th><th>Demand</th><th>Replacement Due</th><th>Reusable</th><th>Suggested</th><th>Budget</th></tr></thead>
+        <tbody>
+          {% for item in plans %}
+          <tr><td>#{{ item.id }}</td><td>{{ item.category_name }}</td><td>{{ item.forecast_period_months }} months</td><td>{{ item.expected_demand }}</td><td>{{ item.replacement_due }}</td><td>{{ item.available_reusable_stock }}</td><td>{{ item.suggested_procurement }}</td><td>{{ item.estimated_budget }}</td></tr>
+          {% else %}
+          <tr><td colspan="8"><div class="empty-state">No procurement plans yet.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

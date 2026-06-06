@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% set page_title = "Master Data" %}
+{% set page_subtitle = "Category, vendor and location masters used by inventory workflows." %}
+{% block content %}
+<div class="stack">
+  <div class="summary-grid">
+    <div class="summary-tile"><div class="kicker">Categories</div><div class="main">{{ categories|length }}</div><div class="sub">Asset classes in use</div></div>
+    <div class="summary-tile"><div class="kicker">Vendors</div><div class="main">{{ vendors|length }}</div><div class="sub">Registered supply sources</div></div>
+    <div class="summary-tile"><div class="kicker">Locations</div><div class="main">{{ locations|length }}</div><div class="sub">Physical or operating locations</div></div>
+  </div>
+
+  <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
+  {% for key, label, items in [("categories", "Categories", categories), ("vendors", "Vendors", vendors), ("locations", "Locations", locations)] %}
+  <section class="surface">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Master Registry</div>
+        <h3>{{ label }}</h3>
+      </div>
+    </div>
+    <form method="post" action="/masters/{{ key }}" class="stack">
+      <label>Name <input name="name" required></label>
+      <button class="btn primary" type="submit">Add {{ label[:-1] }}</button>
+    </form>
+    <div class="table-wrap" style="margin-top: 16px;">
+      <table>
+        <tbody>
+          {% for item in items %}
+          <tr><td>{{ item.name }}</td></tr>
+          {% else %}
+          <tr><td>No {{ label.lower() }} created yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  {% endfor %}
+  </div>
+</div>
+{% endblock %}

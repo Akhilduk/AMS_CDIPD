@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% set page_title = "Replacement Workflow" %}
+{% set page_subtitle = "Track asset swap requests and fresh-signing triggers." %}
+{% block content %}
+<div class="stack">
+  <section class="surface">
+    <div class="section-head"><h3>Initiate Replacement</h3></div>
+    <form method="post" class="form-grid">
+      <label>Old Asset <select name="old_asset_id">{% for asset in assets %}<option value="{{ asset.id }}">{{ asset.asset_code }} - {{ asset.name }}</option>{% endfor %}</select></label>
+      <label>New Asset <select name="new_asset_id">{% for asset in assets %}<option value="{{ asset.id }}">{{ asset.asset_code }} - {{ asset.name }}</option>{% endfor %}</select></label>
+      <label>Employee <select name="employee_id">{% for employee in employees %}<option value="{{ employee.id }}">{{ employee.full_name }}</option>{% endfor %}</select></label>
+      <label>Ticket <select name="ticket_id"><option value="">Optional</option>{% for ticket in tickets %}<option value="{{ ticket.id }}">#{{ ticket.id }} - {{ ticket.asset.asset_code }}</option>{% endfor %}</select></label>
+      <label style="grid-column: 1 / -1;">Reason <textarea name="reason" required></textarea></label>
+      <div class="actions" style="grid-column: 1 / -1;"><button class="btn primary" type="submit">Create Replacement Flow</button></div>
+    </form>
+  </section>
+  <section class="surface">
+    <div class="section-head"><h3>Replacement Register</h3></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>ID</th><th>Employee</th><th>Old Asset</th><th>New Asset</th><th>Status</th><th>Reason</th></tr></thead>
+        <tbody>
+          {% for item in replacements %}
+          <tr><td>#{{ item.id }}</td><td>{{ item.employee.full_name }}</td><td>{{ item.old_asset.asset_code }}</td><td>{{ item.new_asset.asset_code }}</td><td>{{ item.status }}</td><td>{{ item.reason }}</td></tr>
+          {% else %}
+          <tr><td colspan="6"><div class="empty-state">No replacement records yet.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

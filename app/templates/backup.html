@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% set page_title = "Backup Allocation Register" %}
+{% set page_subtitle = "Track temporary backup assets and return status separately from issuance." %}
+{% set page_actions = [{"href": "/backup/new", "label": "Create Backup Allocation", "variant": "primary", "icon": "➕"}] %}
+{% block content %}
+<div class="stack">
+  <div class="summary-grid">
+    <div class="summary-tile"><div class="kicker">Backup Allocations</div><div class="main">{{ backups|length }}</div><div class="sub">Current backup contracts</div></div>
+    <div class="summary-tile"><div class="kicker">Active Backups</div><div class="main">{{ backups|selectattr('status', 'equalto', 'active')|list|length }}</div><div class="sub">Assets still issued</div></div>
+  </div>
+
+  <section class="surface">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Audit Register</div>
+        <h3>Backup Asset Listing</h3>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Employee</th>
+            <th>Primary Asset</th>
+            <th>Backup Asset</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in backups %}
+          <tr>
+            <td>#{{ item.id }}</td>
+            <td>{{ item.employee.full_name }}</td>
+            <td>{{ item.primary_asset.asset_code }}<br><span class="help">{{ item.primary_asset.name }}</span></td>
+            <td>{{ item.backup_asset.asset_code }}<br><span class="help">{{ item.backup_asset.name }}</span></td>
+            <td><span class="badge">{{ item.status }}</span></td>
+            <td>
+              <div class="actions">
+                <a class="btn ghost" href="/backup/{{ item.id }}">View</a>
+                {% if item.status == "active" %}
+                <form method="post" action="/backup/{{ item.id }}/close" style="display:inline-block; margin:0;">
+                  <button class="btn secondary" type="submit" data-confirm="Close this backup allocation and return the backup asset?">Close</button>
+                </form>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+          {% if backups|length == 0 %}
+          <tr><td colspan="6"><div class="empty-state">No backup allocations yet. Create one to start tracking temporary reassignment.</div></td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

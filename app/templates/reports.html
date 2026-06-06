@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% set page_title = "Reports" %}
+{% set page_subtitle = "Operational analytics with drill-down report views and exports." %}
+{% block content %}
+<div class="stack">
+  <div class="summary-grid">
+    {% for card in report_summary %}
+    <a class="summary-tile" href="{{ card.href }}">
+      <div class="kicker">{{ card.label }}</div>
+      <div class="main">{{ card.value }}</div>
+      <div class="sub">Open filtered report</div>
+    </a>
+    {% endfor %}
+  </div>
+
+  <section class="surface">
+    <div class="section-head">
+      <h3>Master Asset Ledger</h3>
+      <div class="actions"><a class="btn secondary" href="/reports/export/assets_all">Export CSV</a></div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Asset</th><th>Status</th><th>Location</th><th>Holder</th></tr></thead>
+        <tbody>
+          {% for row in asset_rows %}
+          <tr><td>{{ row[0] }}</td><td>{{ row[1] }}</td><td>{{ row[2] }}</td><td>{{ row[3] }}</td></tr>
+          {% else %}
+          <tr><td colspan="4"><div class="empty-state">No asset data available.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="surface">
+    <div class="section-head">
+      <h3>Signed Documents</h3>
+      <div class="actions"><a class="btn secondary" href="/reports/drilldown/documents_signed">Open Report</a></div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Document</th><th>Employee</th><th>Asset</th><th>Hash</th></tr></thead>
+        <tbody>
+          {% for row in document_rows %}
+          <tr><td>{{ row[0] }}</td><td>{{ row[1] }}</td><td>{{ row[2] }}</td><td class="mono">{{ row[3] }}</td></tr>
+          {% else %}
+          <tr><td colspan="4"><div class="empty-state">No signed documents available.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="surface">
+    <div class="section-head">
+      <h3>Lifecycle Operations</h3>
+    </div>
+    <div class="actions">
+      <a class="btn secondary" href="/reports/drilldown/tickets_open">Tickets</a>
+      <a class="btn secondary" href="/reports/drilldown/repairs">Repairs</a>
+      <a class="btn secondary" href="/reports/drilldown/backup_allocations">Backup</a>
+      <a class="btn secondary" href="/reports/drilldown/verification_campaigns">Verification</a>
+      <a class="btn secondary" href="/reports/drilldown/liabilities_open">Liabilities</a>
+      <a class="btn secondary" href="/reports/drilldown/disposal_open">Disposal</a>
+      <a class="btn secondary" href="/reports/drilldown/procurement_plans">Procurement</a>
+    </div>
+    <div class="table-wrap" style="margin-top: 12px;">
+      <table>
+        <thead><tr><th>Reference</th><th>Status</th><th>Detail</th><th>Note</th></tr></thead>
+        <tbody>
+          {% for row in operations_rows %}
+          <tr><td>{{ row[0] }}</td><td>{{ row[1] }}</td><td>{{ row[2] }}</td><td>{{ row[3] }}</td></tr>
+          {% else %}
+          <tr><td colspan="4"><div class="empty-state">No lifecycle records available.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="surface">
+    <div class="section-head">
+      <h3>Additional Reports</h3>
+    </div>
+    <div class="actions">
+      {% for label, href in catalog_links %}
+      <a class="btn secondary" href="{{ href }}">{{ label }}</a>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="surface">
+    <div class="section-head">
+      <h3>QR Verification Deviations</h3>
+      <div class="actions"><a class="btn secondary" href="/reports/drilldown/qr_deviations">Open Report</a></div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Asset</th><th>Result</th><th>Verifier</th><th>Notes</th></tr></thead>
+        <tbody>
+          {% for row in verification_rows %}
+          <tr><td>{{ row[0] }}</td><td>{{ row[1] }}</td><td>{{ row[2] }}</td><td>{{ row[3] }}</td></tr>
+          {% else %}
+          <tr><td colspan="4"><div class="empty-state">No verification deviations available.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

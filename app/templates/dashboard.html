@@ -1,0 +1,328 @@
+{% extends "base.html" %}
+{% set page_title = "Dashboard" %}
+{% set page_subtitle = "" %}
+{% block content %}
+<div class="stack">
+  <div class="summary-grid">
+    {% for card in cards %}
+    <div class="summary-tile">
+      {% if card.href %}<a href="{{ card.href }}" style="display:block;">{% endif %}
+      <div class="kicker">{{ card.label }}</div>
+      <div class="main">{{ card.value }}</div>
+      {% if card.href %}</a>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if dashboard_role == "employee" %}
+  <section class="surface">
+    <div class="section-head">
+      <h3>My Allocations</h3>
+      <a class="btn secondary" href="/allocations">Open</a>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Asset</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody>
+          {% for item in primary_rows %}
+          <tr>
+            <td>{{ item.asset.asset_code }} - {{ item.asset.name }}</td>
+            <td>{{ item.status }}</td>
+            <td>
+              {% if item.status == "pending_signature" %}
+              <a href="/allocations">Sign</a>
+              {% else %}
+              <span class="help">Complete</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="3"><div class="empty-state">No allocations available.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="surface">
+    <div class="section-head">
+      <h3>My Documents</h3>
+      <a class="btn secondary" href="/documents">Open</a>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Document</th><th>Asset</th><th>Action</th></tr></thead>
+        <tbody>
+          {% for item in documents %}
+          <tr>
+            <td>{{ item.document_number }}</td>
+            <td>{{ item.allocation.asset.asset_code }}</td>
+            <td><a href="/documents/{{ item.id }}/view">View</a></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="3"><div class="empty-state">No signed documents available.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  {% elif dashboard_role == "hardware_admin" %}
+  <section class="surface">
+    <div class="section-head">
+      <h3>Inventory Requiring Attention</h3>
+      <a class="btn secondary" href="/assets">Inventory</a>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Asset</th><th>Status</th><th>History</th></tr></thead>
+        <tbody>
+          {% for item in primary_rows %}
+          <tr>
+            <td>{{ item.asset_code }} - {{ item.name }}</td>
+            <td>{{ item.status }}</td>
+            <td><a href="/assets/{{ item.id }}/history">View</a></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="3"><div class="empty-state">No inventory records available.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="surface">
+    <div class="section-head">
+      <h3>Open Tickets</h3>
+      <a class="btn secondary" href="/maintenance">Tickets</a>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Ticket</th><th>Asset</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for item in secondary_rows %}
+          <tr>
+            <td>#{{ item.id }}</td>
+            <td>{{ item.asset.asset_code }}</td>
+            <td>{{ item.status }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="3"><div class="empty-state">No maintenance tickets available.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  {% elif dashboard_role == "hr_admin" %}
+  <section class="surface">
+    <div class="section-head">
+      <h3>Allocation Approval Queue</h3>
+      <a class="btn secondary" href="/allocations">Approvals</a>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Asset</th><th>Employee</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for item in primary_rows %}
+          <tr>
+            <td>{{ item.asset.asset_code }}</td>
+            <td>{{ item.employee.full_name }}</td>
+            <td>{{ item.status }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="3"><div class="empty-state">No approval items pending.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="surface">
+    <div class="section-head">
+      <h3>Exit and Return Queue</h3>
+      <a class="btn secondary" href="/returns">Returns</a>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Asset</th><th>Employee</th><th>Clearance</th></tr></thead>
+        <tbody>
+          {% for item in secondary_rows %}
+          <tr>
+            <td>{{ item.asset.asset_code }}</td>
+            <td>{{ item.employee.full_name }}</td>
+            <td>{{ item.exit_clearance_status }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="3"><div class="empty-state">No return cases available.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  {% elif dashboard_role == "director" %}
+  <section class="surface">
+    <div class="section-head">
+      <h3>Abroad Approval Queue</h3>
+      <a class="btn secondary" href="/travel">Open</a>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Employee</th><th>Asset</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for item in primary_rows %}
+          <tr>
+            <td>{{ item.employee.full_name }}</td>
+            <td>{{ item.asset.asset_code }}</td>
+            <td>{{ item.status }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="3"><div class="empty-state">No travel requests available.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="surface">
+    <div class="section-head">
+      <h3>Risk Assets</h3>
+      <a class="btn secondary" href="/reports">Reports</a>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Asset</th><th>Status</th><th>History</th></tr></thead>
+        <tbody>
+          {% for item in secondary_rows %}
+          <tr>
+            <td>{{ item.asset_code }} - {{ item.name }}</td>
+            <td>{{ item.status }}</td>
+            <td><a href="/assets/{{ item.id }}/history">View</a></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="3"><div class="empty-state">No risk assets available.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  {% elif dashboard_role == "auditor" %}
+  <section class="surface">
+    <div class="section-head">
+      <h3>Signed Documents</h3>
+      <a class="btn secondary" href="/documents">Repository</a>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Document</th><th>Asset</th><th>Action</th></tr></thead>
+        <tbody>
+          {% for item in primary_rows %}
+          <tr>
+            <td>{{ item.document_number }}</td>
+            <td>{{ item.allocation.asset.asset_code }}</td>
+            <td><a href="/documents/{{ item.id }}/view">View</a></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="3"><div class="empty-state">No signed documents available.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="surface">
+    <div class="section-head">
+      <h3>Verification Deviations</h3>
+      <a class="btn secondary" href="/reports">Open</a>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Asset</th><th>Result</th><th>Verifier</th></tr></thead>
+        <tbody>
+          {% for item in secondary_rows %}
+          <tr>
+            <td>{{ item.asset.asset_code }}</td>
+            <td>{{ item.result }}</td>
+            <td>{{ item.verified_by.full_name }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="3"><div class="empty-state">No verification records available.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  {% else %}
+  <section class="surface">
+    <div class="section-head">
+      <h3>Users</h3>
+      <a class="btn secondary" href="/users">Open</a>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Name</th><th>Email</th><th>Role</th></tr></thead>
+        <tbody>
+          {% for item in primary_rows %}
+          <tr><td>{{ item.full_name }}</td><td>{{ item.email }}</td><td>{{ item.role }}</td></tr>
+          {% else %}
+          <tr><td colspan="3"><div class="empty-state">No users available.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="surface">
+    <div class="section-head">
+      <h3>Policy Versions</h3>
+      <a class="btn secondary" href="/policies">Open</a>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Version</th><th>Title</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for item in secondary_rows %}
+          <tr><td>{{ item.version }}</td><td>{{ item.title }}</td><td>{{ "published" if item.published else "draft" }}</td></tr>
+          {% else %}
+          <tr><td colspan="3"><div class="empty-state">No policies available.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  {% endif %}
+
+  <section class="surface">
+    <div class="section-head">
+      <h3>Recent Activity</h3>
+      {% if current_user.role in ["super_admin", "hardware_admin", "auditor"] %}
+      <a class="btn secondary" href="/audit">Audit</a>
+      {% elif current_user.role == "director" %}
+      <a class="btn secondary" href="/management/reports">Management</a>
+      {% else %}
+      <a class="btn secondary" href="/reports">Reports</a>
+      {% endif %}
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Module</th><th>Action</th><th>Actor</th><th>Reference</th></tr></thead>
+        <tbody>
+          {% for item in recent_logs %}
+          <tr>
+            <td>{{ item.module }}</td>
+            <td>{{ item.action }}</td>
+            <td>{{ item.actor_name }}</td>
+            <td class="mono">{{ item.reference_id }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4"><div class="empty-state">No activity yet.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

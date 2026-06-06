@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% set page_title = "Liability Register" %}
+{% set page_subtitle = "Track recoveries for damage, loss, accessory gaps, and policy violations." %}
+{% block content %}
+<div class="stack">
+  <section class="surface">
+    <div class="section-head"><h3>Create Liability</h3></div>
+    <form method="post" class="form-grid">
+      <label>Employee <select name="employee_id">{% for employee in employees %}<option value="{{ employee.id }}">{{ employee.full_name }}</option>{% endfor %}</select></label>
+      <label>Asset <select name="asset_id"><option value="">Optional</option>{% for asset in assets %}<option value="{{ asset.id }}">{{ asset.asset_code }}</option>{% endfor %}</select></label>
+      <label>Type <input name="liability_type" placeholder="Lost asset / Damage / Missing accessory" required></label>
+      <label>Amount <input type="number" name="amount" required></label>
+      <label style="grid-column: 1 / -1;">Remarks <textarea name="remarks"></textarea></label>
+      <div class="actions" style="grid-column: 1 / -1;"><button class="btn primary" type="submit">Add Liability</button></div>
+    </form>
+  </section>
+  <section class="surface">
+    <div class="section-head"><h3>Liability Records</h3></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>ID</th><th>Employee</th><th>Asset</th><th>Type</th><th>Amount</th><th>Recovery</th><th>HR Approval</th></tr></thead>
+        <tbody>
+          {% for item in liabilities %}
+          <tr><td>#{{ item.id }}</td><td>{{ item.employee.full_name }}</td><td>{{ item.asset.asset_code if item.asset else '-' }}</td><td>{{ item.liability_type }}</td><td>{{ item.amount }}</td><td>{{ item.recovery_status }}</td><td>{{ item.hr_approval_status }}</td></tr>
+          {% else %}
+          <tr><td colspan="7"><div class="empty-state">No liabilities recorded yet.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

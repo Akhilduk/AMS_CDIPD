@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% set page_title = "Permission Matrix" %}
+{% set page_subtitle = "Module-wise RBAC controls for roles and future workflow gates." %}
+{% block content %}
+<div class="stack">
+  <section class="surface">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Matrix</div>
+        <h3>Role Permissions</h3>
+      </div>
+      <div class="panel-note">Menu-level checks already exist. This matrix adds module-action coverage for later API and workflow enforcement.</div>
+    </div>
+    <form method="post">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Module / Action</th>
+              {% for role in roles %}
+              <th>{{ role.name }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for module in permission_modules %}
+              {% for action in permission_actions %}
+              <tr>
+                <td>{{ module.replace("_", " ").title() }} / {{ action.title() }}</td>
+                {% for role in roles %}
+                  {% set permission = permissions|selectattr("module", "equalto", module)|selectattr("action", "equalto", action)|list|first %}
+                  <td style="text-align: center;">
+                    {% if permission %}
+                    <input type="checkbox" name="perm_{{ role.id }}_{{ permission.id }}" {% if matrix.get((role.id, permission.id)) %}checked{% endif %}>
+                    {% else %}
+                    -
+                    {% endif %}
+                  </td>
+                {% endfor %}
+              </tr>
+              {% endfor %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="actions" style="margin-top: 16px;">
+        <button class="btn primary" type="submit">Save Permissions</button>
+      </div>
+    </form>
+  </section>
+</div>
+{% endblock %}

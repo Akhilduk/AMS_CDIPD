@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% set page_title = "Workflow Settings" %}
+{% set page_subtitle = "" %}
+{% block content %}
+<div class="stack">
+  <section class="surface">
+    <div class="section-head">
+      <h3>Category Workflow Rules</h3>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Category</th><th>Rules</th><th>Update</th></tr></thead>
+        <tbody>
+          {% for item in workflows %}
+          <tr>
+            <td>{{ item.category_name }}</td>
+            <td>
+              <div class="help">HR approval: {{ "Yes" if item.hr_approval_required else "No" }}</div>
+              <div class="help">Signing: {{ "Yes" if item.signing_required else "No" }}</div>
+              <div class="help">Director approval: {{ "Yes" if item.director_approval_required else "No" }}</div>
+              <div class="help">Return check: {{ "Yes" if item.return_check_required else "No" }}</div>
+            </td>
+            <td>
+              <form method="post" action="/workflows/{{ item.id }}" class="stack">
+                <label><input type="checkbox" name="hr_approval_required" value="1" {% if item.hr_approval_required %}checked{% endif %}> HR approval required</label>
+                <label><input type="checkbox" name="signing_required" value="1" {% if item.signing_required %}checked{% endif %}> Signing required</label>
+                <label><input type="checkbox" name="director_approval_required" value="1" {% if item.director_approval_required %}checked{% endif %}> Director approval required</label>
+                <label><input type="checkbox" name="return_check_required" value="1" {% if item.return_check_required %}checked{% endif %}> Return check required</label>
+                <button class="btn primary" type="submit">Save</button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="3"><div class="empty-state">No workflow settings available.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

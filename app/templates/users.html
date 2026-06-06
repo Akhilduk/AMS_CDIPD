@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% set page_title = "User Management" %}
+{% set page_subtitle = "Internal identity master with activation, reset, and role assignment controls." %}
+{% block content %}
+<div class="stack">
+  <div class="summary-grid">
+    <div class="summary-tile">
+      <div class="kicker">Total Users</div>
+      <div class="main">{{ users|length }}</div>
+      <div class="sub">Internal accounts in the local auth adapter</div>
+    </div>
+    <div class="summary-tile">
+      <div class="kicker">Active Users</div>
+      <div class="main">{{ users|selectattr("active")|list|length }}</div>
+      <div class="sub">Currently allowed to sign in</div>
+    </div>
+    <div class="summary-tile">
+      <div class="kicker">Roles Configured</div>
+      <div class="main">{{ roles|length }}</div>
+      <div class="sub">Assignable RBAC roles</div>
+    </div>
+  </div>
+
+  <section class="surface">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Identity Setup</div>
+        <h3>Create User</h3>
+      </div>
+    </div>
+    <form method="post" class="form-grid">
+      <label>Employee Code <input name="employee_code" pattern="EMP-[0-9]{3,}" placeholder="EMP-009" required></label>
+      <label>Full Name <input name="full_name" minlength="3" required></label>
+      <label>Email <input type="email" name="email" required></label>
+      <label>Mobile <input name="mobile" pattern="[0-9]{10,15}" placeholder="9999900009"></label>
+      <label>Department <input name="department" value="CDIPD" required></label>
+      <label>Designation <input name="designation" required></label>
+      <label>Reporting Manager <input name="reporting_manager"></label>
+      <label>Employee Type
+        <select name="employee_type">
+          <option value="Regular">Regular</option>
+          <option value="Contract">Contract</option>
+          <option value="Trainee">Trainee</option>
+          <option value="Consultant">Consultant</option>
+          <option value="Leadership">Leadership</option>
+          <option value="Admin">Admin</option>
+          <option value="Audit">Audit</option>
+        </select>
+      </label>
+      <label>Joining Date <input type="date" name="joining_date"></label>
+      <label>Primary Role
+        <select name="role">
+          {% for role in roles %}
+          <option value="{{ role.code }}">{{ role.name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Password <input type="password" name="password" minlength="8" required></label>
+      <label style="display: flex; align-items: center; gap: 0.65rem; margin-top: 1.8rem;">
+        <input type="checkbox" name="active" checked>
+        Active User
+      </label>
+      <div class="actions" style="grid-column: 1 / -1;"><button class="btn primary" type="submit">Create User</button></div>
+    </form>
+  </section>
+
+  <section class="surface">
+    <div class="section-head">
+      <h3>Users</h3>
+      <div class="toolbar">
+        <input class="search-box" data-table-search="users-table" placeholder="Search by name, role, or email">
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table id="users-table">
+        <thead>
+          <tr>
+            <th>Employee</th>
+            <th>Primary Role</th>
+            <th>Department</th>
+            <th>Status</th>
+            <th>Last Login</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in users %}
+          <tr data-status="{{ 'active' if user.active else 'inactive' }}">
+            <td>
+              <div style="font-weight: 700;">{{ user.full_name }}</div>
+              <div class="help">{{ user.employee_code }} | {{ user.email }}</div>
+              <div class="help">{{ user.designation or "-" }}{% if user.mobile %} | {{ user.mobile }}{% endif %}</div>
+            </td>
+            <td>{{ user.role.replace("_", " ").title() }}</td>
+            <td>{{ user.department }}</td>
+            <td><span class="status {{ 'active' if user.active else 'pending' }}">{{ 'Active' if user.active else 'Inactive' }}</span></td>
+            <td>{{ user.last_login.strftime("%d %b %Y %H:%M") if user.last_login else "-" }}</td>
+            <td>
+              <div class="stack">
+                <form method="post" action="/users/{{ user.id }}/toggle-active">
+                  <button class="btn secondary" type="submit" data-confirm="Change active status for {{ user.full_name }}?">{{ 'Deactivate' if user.active else 'Activate' }}</button>
+                </form>
+                <form method="post" action="/users/{{ user.id }}/reset-password" class="stack">
+                  <input name="password" type="password" minlength="8" placeholder="New password" required>
+                  <button class="btn secondary" type="submit" data-confirm="Reset password for {{ user.full_name }}?">Reset Password</button>
+                </form>
+                <form method="post" action="/users/{{ user.id }}/assign-roles" class="stack">
+                  <label>Primary Role
+                    <select name="primary_role">
+                      {% for role in roles %}
+                      <option value="{{ role.code }}" {% if role.code == user.role %}selected{% endif %}>{{ role.name }}</option>
+                      {% endfor %}
+                    </select>
+                  </label>
+                  <div class="chip-row">
+                    {% for role in roles %}
+                    <label class="chip" style="display: inline-flex; align-items: center; gap: 0.35rem;">
+                      <input type="checkbox" name="roles" value="{{ role.code }}" {% if role.code in user_role_map[user.id] %}checked{% endif %}>
+                      {{ role.name }}
+                    </label>
+                    {% endfor %}
+                  </div>
+                  <button class="btn secondary" type="submit" data-confirm="Update role assignments for {{ user.full_name }}?">Assign Roles</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

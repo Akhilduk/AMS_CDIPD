@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% set page_title = "QR Scanner and Verification" %}
+{% set page_subtitle = "Live camera scanning, manual fallback, and verification history for audit campaigns." %}
+{% block content %}
+<div class="stack">
+  <div class="grid cards">
+    <div class="card-stat"><div class="label">Matched</div><div class="value">{{ status_counts.matched }}</div></div>
+    <div class="card-stat"><div class="label">Mismatch</div><div class="value">{{ status_counts.mismatch }}</div></div>
+    <div class="card-stat"><div class="label">Missing</div><div class="value">{{ status_counts.missing }}</div></div>
+  </div>
+
+  <div class="two-col">
+    <section class="surface">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Live Camera</div>
+          <h3>Scan Asset QR</h3>
+        </div>
+      </div>
+      <div class="video-shell">
+        <video id="scanner-video" autoplay muted playsinline></video>
+        <div class="scanner-overlay"><div class="scanner-guide"></div></div>
+      </div>
+      <div class="actions" style="margin-top: 14px;">
+        <button class="btn primary" type="button" id="start-scan">Start Camera</button>
+        <button class="btn secondary" type="button" id="stop-scan">Stop Camera</button>
+      </div>
+      <div class="scanner-result" style="margin-top: 14px;">
+        <div class="help">Detected asset code</div>
+        <div id="scan-result" class="mono">Waiting for scan…</div>
+      </div>
+      <div class="panel-note" style="margin-top: 14px;">
+        Uses the browser `BarcodeDetector` when available. If camera access is blocked or unsupported, use the manual lookup below.
+      </div>
+    </section>
+
+    <section class="surface">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Manual Fallback</div>
+          <h3>Lookup Asset by Code</h3>
+        </div>
+      </div>
+      <form method="get" class="actions">
+        <input id="asset-code-input" name="asset_code" placeholder="AST-0001" value="{{ request.query_params.get('asset_code', '') }}">
+        <button class="btn primary" type="submit">Lookup</button>
+      </form>
+      {% if found_asset %}
+      <div style="margin-top: 18px;" class="policy-summary">
+        <div class="title" style="font-size: 1.15rem;">{{ found_asset.asset_code }}</div>
+        <div class="subtitle">{{ found_asset.name }} | {{ found_asset.serial_number }}</div>
+        <img class="qr" src="/storage/{{ found_asset.qr_path }}" alt="QR" style="margin-top: 14px;">
+      </div>
+      <form method="post" action="/scanner/verify" class="stack" style="margin-top: 16px;">
+        <input type="hidden" name="asset_code" value="{{ found_asset.asset_code }}">
+        <label>Verification Result
+          <select name="result">
+            <option value="matched">Matched</option>
+            <option value="mismatch">Mismatch</option>
+            <option value="missing">Missing</option>
+          </select>
+        </label>
+        <label>Notes <input name="notes"></label>
+        <button class="btn secondary" type="submit">Record Verification</button>
+      </form>
+      {% endif %}
+    </section>
+  </div>
+
+  <section class="surface">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Verification History</div>
+        <h3>Recent Scan Results</h3>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Asset</th><th>Result</th><th>Verifier</th><th>Notes</th></tr></thead>
+        <tbody>
+          {% for item in recent_verifications %}
+          <tr>
+            <td>{{ item.asset.asset_code }}</td>
+            <td><span class="badge">{{ item.result }}</span></td>
+            <td>{{ item.verified_by.full_name }}</td>
+            <td>{{ item.notes or "-" }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4"><div class="empty-state">No verification records yet. Run a scan or manual verification to begin the audit trail.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<script>
+  (function () {
+    const video = document.getElementById("scanner-video");
+    const startButton = document.getElementById("start-scan");
+    const stopButton = document.getElementById("stop-scan");
+    const resultNode = document.getElementById("scan-result");
+    const input = document.getElementById("asset-code-input");
+    let stream = null;
+    let timer = null;
+
+    async function startScan() {
+      if (!navigator.mediaDevices || !window.BarcodeDetector) {
+        resultNode.textContent = "Camera scanning is not supported in this browser.";
+        return;
+      }
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        video.srcObject = stream;
+        const detector = new BarcodeDetector({ formats: ["qr_code"] });
+        timer = window.setInterval(async function () {
+          if (!video.videoWidth) return;
+          try {
+            const codes = await detector.detect(video);
+            if (!codes.length) return;
+            const code = codes[0].rawValue || "";
+            const normalized = code.replace(/^asset:/i, "");
+            resultNode.textContent = normalized;
+            if (input) input.value = normalized;
+          } catch (error) {
+            resultNode.textContent = "Scanner could not read the frame.";
+          }
+        }, 900);
+      } catch (error) {
+        resultNode.textContent = "Camera permission denied or unavailable.";
+      }
+    }
+
+    function stopScan() {
+      if (timer) window.clearInterval(timer);
+      timer = null;
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+      stream = null;
+      video.srcObject = null;
+    }
+
+    startButton.addEventListener("click", startScan);
+    stopButton.addEventListener("click", stopScan);
+    window.addEventListener("beforeunload", stopScan);
+  })();
+</script>
+{% endblock %}

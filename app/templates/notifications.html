@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% set page_title = "Notifications" %}
+{% set page_subtitle = "In-app event stream for workflow follow-up." %}
+{% block content %}
+<div class="stack">
+  <div class="summary-grid">
+    <div class="summary-tile"><div class="kicker">Total</div><div class="main">{{ notifications|length }}</div><div class="sub">Recorded in-app events</div></div>
+    <div class="summary-tile"><div class="kicker">Unread</div><div class="main">{{ notifications|rejectattr("is_read")|list|length }}</div><div class="sub">Pending attention</div></div>
+  </div>
+
+  <section class="surface">
+    <div class="section-head">
+      <h3>Inbox</h3>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>When</th><th>Event</th><th>Message</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody>
+          {% for item in notifications %}
+          <tr data-status="{{ 'read' if item.is_read else 'unread' }}">
+            <td>{{ item.created_at.strftime("%d %b %Y %H:%M") }}</td>
+            <td>{{ item.title }}</td>
+            <td>{{ item.message }}</td>
+            <td><span class="status {{ 'active' if item.is_read else 'pending' }}">{{ 'Read' if item.is_read else 'Unread' }}</span></td>
+            <td>
+              {% if not item.is_read %}
+              <form method="post" action="/notifications/{{ item.id }}/read">
+                <button class="btn secondary" type="submit">Mark Read</button>
+              </form>
+              {% elif item.link_url and item.link_url != '#' %}
+              <a class="btn secondary" href="{{ item.link_url }}">Open</a>
+              {% else %}
+              <span class="help">-</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="5"><div class="empty-state">No notifications recorded yet.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

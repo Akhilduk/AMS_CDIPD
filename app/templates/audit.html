@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% set page_title = "Audit" %}
+{% set page_subtitle = "" %}
+{% block content %}
+<div class="stack">
+  <div class="summary-grid">
+    <div class="summary-tile"><div class="kicker">Events</div><div class="main">{{ logs|length }}</div></div>
+    <div class="summary-tile"><div class="kicker">Documents</div><div class="main">{{ documents|length }}</div></div>
+  </div>
+
+  <section class="surface">
+    <div class="section-head">
+      <h3>Audit Events</h3>
+      <div class="toolbar">
+        <input class="search-box" data-table-search="audit-log-table" placeholder="Search">
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table id="audit-log-table">
+        <thead><tr><th>When</th><th>Module</th><th>Action</th><th>Actor</th><th>Change</th></tr></thead>
+        <tbody>
+          {% for item in logs %}
+          <tr data-status="{{ item.module }}">
+            <td>{{ item.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+            <td>{{ item.module }}</td>
+            <td>{{ item.action }}</td>
+            <td>{{ item.actor_name }}</td>
+            <td>
+              {% if item.old_value or item.new_value %}
+              <div class="help">Before: {{ item.old_value or "-" }}</div>
+              <div class="help">After: {{ item.new_value or "-" }}</div>
+              {% else %}
+              <div class="help">Ref {{ item.reference_id }}</div>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="5"><div class="empty-state">No audit events recorded.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="surface">
+    <div class="section-head">
+      <h3>Signed Documents</h3>
+      <div class="toolbar">
+        <input class="search-box" data-table-search="audit-doc-table" placeholder="Search">
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table id="audit-doc-table">
+        <thead><tr><th>Document</th><th>Hash</th><th>Open</th></tr></thead>
+        <tbody>
+          {% for item in documents %}
+          <tr data-status="document">
+            <td>{{ item.document_number }}</td>
+            <td class="mono">{{ item.hash_sha256[:24] }}...</td>
+            <td>
+              <div class="actions">
+                <a href="/documents/{{ item.id }}/view">View</a>
+                <a href="/documents/{{ item.id }}">PDF</a>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="3"><div class="empty-state">No signed documents available.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

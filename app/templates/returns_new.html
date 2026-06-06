@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% set page_title = "Initiate Return" %}
+{% set page_subtitle = "Log a return request separately from the register so verification remains clean." %}
+{% set page_actions = [{"href": "/returns", "label": "Return Register", "variant": "secondary", "icon": "📋"}] %}
+{% block content %}
+<div class="stack">
+  <section class="surface">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Return Intake</div>
+        <h3>Initiate Return Request</h3>
+      </div>
+    </div>
+    <form method="post" action="/returns" class="form-grid">
+      <label>Asset
+        <select name="asset_id" required>
+          {% for asset in assets %}
+          <option value="{{ asset.id }}">{{ asset.asset_code }} - {{ asset.name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label style="grid-column: 1 / -1;">Reason for Return
+        <textarea name="reason" required rows="4" placeholder="Describe why the asset is being returned."></textarea>
+      </label>
+      <div class="actions" style="grid-column: 1 / -1; justify-content: flex-end;">
+        <button class="btn primary" type="submit">Submit Request</button>
+      </div>
+    </form>
+  </section>
+</div>
+{% endblock %}

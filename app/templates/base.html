@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ title or brand.app_name }}</title>
+  <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-shell">
+        <div class="brand-block">
+          <div class="kicker" style="color: rgba(243,245,238,0.66);">CDIPD Workspace</div>
+          <div class="brand" style="margin-top: 8px;">Asset System</div>
+        </div>
+
+        <div class="user-card">
+          <div style="font-weight: 800;">{{ current_user.full_name }}</div>
+          <div class="help" style="color: rgba(243,245,238,0.72); margin-top: 4px;">{{ current_user.role.replace("_", " ").title() }}</div>
+          {% if role_switch_roles and role_switch_roles|length > 1 %}
+          <div class="help" style="color: rgba(243,245,238,0.56); margin-top: 4px;">Roles: {{ role_switch_roles|join(", ") }}</div>
+          {% endif %}
+          <div class="help" style="color: rgba(243,245,238,0.56); margin-top: 4px;">{{ current_user.email }}</div>
+        </div>
+
+        <nav class="sidebar-nav">
+          {% for group in sidebar_groups %}
+          <div class="sidebar-group">
+            <div class="sidebar-group-title">{{ group.label }}</div>
+            {% for item in group["items"] %}
+            <a class="nav-item {% if active_path == item.path or active_path.startswith(item.path ~ '/') %}active{% endif %}" href="{{ item.path }}">
+              <span class="nav-icon">{{ item.icon }}</span>{{ item.label }}
+            </a>
+            {% endfor %}
+          </div>
+          {% endfor %}
+        </nav>
+
+        <div class="sidebar-footer">
+        </div>
+      </div>
+    </aside>
+
+    <main class="content">
+      <div class="page-shell">
+        <header class="app-header">
+          <div class="header-meta">
+            {% if breadcrumb %}
+            <div class="breadcrumb">
+              {% for crumb in breadcrumb %}
+                <a href="{{ crumb.href }}">{{ crumb.label }}</a>
+                {% if not loop.last %}<span class="breadcrumb-sep">›</span>{% endif %}
+              {% endfor %}
+            </div>
+            {% endif %}
+            <div class="kicker">Dashboard</div>
+            <div class="title">{{ page_title }}</div>
+            {% if page_subtitle %}<div class="subtitle">{{ page_subtitle }}</div>{% endif %}
+          </div>
+          <div class="header-actions page-action-bar">
+            {% if page_actions %}
+            {% for action in page_actions %}
+            <a class="btn {% if action.variant == 'primary' %}primary{% elif action.variant == 'secondary' %}secondary{% else %}ghost{% endif %}" href="{{ action.href }}">
+              {% if action.icon %}{{ action.icon }}{% endif %}{{ action.label }}
+            </a>
+            {% endfor %}
+            {% endif %}
+            <div class="spacer"></div>
+            {% if current_user %}
+            <a class="btn icon-btn" href="/notifications" title="Notifications{% if unread_notifications %} ({{ unread_notifications }}){% endif %}">🔔{% if unread_notifications %}<span class="badge-dot">●</span>{% endif %}</a>
+            {% endif %}
+            {% if current_user %}
+            <a class="btn icon-btn" href="/logout" title="Logout">🚪</a>
+            {% endif %}
+            {% if current_user %}
+            <button class="btn icon-btn" type="button" data-sidebar-toggle title="Toggle Menu">☰</button>
+            {% endif %}
+            <button class="btn icon-btn theme-toggle" type="button" data-theme-toggle title="Toggle Theme">🌙</button>
+          </div>
+        </header>
+
+        {% if flash %}
+        <div class="flash {{ flash.level }}">
+          <div>{{ flash.message }}</div>
+          <button type="button" data-dismiss-flash>&times;</button>
+        </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+
+        <footer class="app-footer">{{ brand.org_name }}</footer>
+      </div>
+    </main>
+  </div>
+
+  <dialog class="modal-backdrop" id="confirm-modal">
+    <div class="modal-card">
+      <div class="kicker">Confirm Action</div>
+      <h3 id="confirm-title" style="margin-top: 8px;">Continue?</h3>
+      <div class="help" id="confirm-message" style="margin-top: 10px;">Please confirm this action.</div>
+      <div class="actions" style="margin-top: 18px;">
+        <button class="btn secondary" type="button" id="confirm-cancel">Cancel</button>
+        <button class="btn primary" type="button" id="confirm-accept">Continue</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script>
+    (function () {
+      const key = "cdipd-theme";
+      const root = document.body;
+      const button = document.querySelector("[data-theme-toggle]");
+      const states = ["auto", "light", "night"];
+      const apply = (value) => {
+        if (value === "auto") {
+          root.removeAttribute("data-theme");
+        } else {
+          root.setAttribute("data-theme", value);
+        }
+        if (button) {
+          const label = value.charAt(0).toUpperCase() + value.slice(1);
+          button.textContent = "Theme: " + label;
+        }
+      };
+      let current = localStorage.getItem(key) || "auto";
+      apply(current);
+      if (button) {
+        button.addEventListener("click", function () {
+          current = states[(states.indexOf(current) + 1) % states.length];
+          localStorage.setItem(key, current);
+          apply(current);
+        });
+      }
+
+      const sidebarToggle = document.querySelector("[data-sidebar-toggle]");
+      const layout = document.querySelector(".layout");
+      if (sidebarToggle && layout) {
+        sidebarToggle.addEventListener("click", function () {
+          layout.classList.toggle("sidebar-collapsed");
+        });
+      }
+
+      const flashDismiss = document.querySelector("[data-dismiss-flash]");
+      if (flashDismiss) {
+        flashDismiss.addEventListener("click", function () {
+          this.closest(".flash").remove();
+        });
+      }
+
+      const modal = document.getElementById("confirm-modal");
+      const confirmMessage = document.getElementById("confirm-message");
+      const confirmCancel = document.getElementById("confirm-cancel");
+      const confirmAccept = document.getElementById("confirm-accept");
+      let pendingSubmit = null;
+
+      document.addEventListener("click", function (event) {
+        const buttonNode = event.target.closest("[data-confirm]");
+        if (!buttonNode || !modal) return;
+        const form = buttonNode.closest("form");
+        if (!form) return;
+        event.preventDefault();
+        pendingSubmit = { form, buttonNode };
+        confirmMessage.textContent = buttonNode.getAttribute("data-confirm");
+        modal.showModal();
+      });
+
+      if (confirmCancel) {
+        confirmCancel.addEventListener("click", function () {
+          pendingSubmit = null;
+          modal.close();
+        });
+      }
+
+      if (confirmAccept) {
+        confirmAccept.addEventListener("click", function () {
+          if (pendingSubmit) pendingSubmit.form.requestSubmit(pendingSubmit.buttonNode);
+          pendingSubmit = null;
+          modal.close();
+        });
+      }
+
+      document.querySelectorAll("form").forEach(function (form) {
+        form.querySelectorAll("input, select, textarea").forEach(function (field) {
+          field.setAttribute("data-live-validate", "true");
+          const help = document.createElement("div");
+          help.className = "field-error";
+          field.insertAdjacentElement("afterend", help);
+          const syncMessage = function () {
+            help.textContent = field.validationMessage || "";
+          };
+          field.addEventListener("input", syncMessage);
+          field.addEventListener("blur", syncMessage);
+        });
+      });
+
+      document.querySelectorAll("[data-table-search]").forEach(function (searchInput) {
+        const tableId = searchInput.getAttribute("data-table-search");
+        const table = document.getElementById(tableId);
+        if (!table) return;
+        const statusFilter = document.querySelector('[data-table-status="' + tableId + '"]');
+        const filterRows = function () {
+          const term = (searchInput.value || "").toLowerCase().trim();
+          const status = statusFilter ? statusFilter.value.toLowerCase().trim() : "";
+          table.querySelectorAll("tbody tr").forEach(function (row) {
+            if (row.querySelector(".empty-state")) return;
+            const text = row.textContent.toLowerCase();
+            const rowStatus = (row.getAttribute("data-status") || "").toLowerCase();
+            const matchesTerm = !term || text.indexOf(term) >= 0;
+            const matchesStatus = !status || rowStatus === status;
+            row.style.display = matchesTerm && matchesStatus ? "" : "none";
+          });
+        };
+        searchInput.addEventListener("input", filterRows);
+        if (statusFilter) statusFilter.addEventListener("change", filterRows);
+      });
+
+      document.querySelectorAll("[data-countdown]").forEach(function (node) {
+        const button = node.closest(".panel-note")?.previousElementSibling?.querySelector("[data-resend-at]");
+        const target = new Date(node.getAttribute("data-countdown"));
+        const tick = function () {
+          const remaining = Math.max(0, Math.floor((target.getTime() - Date.now()) / 1000));
+          node.textContent = remaining + "s";
+          if (button) button.disabled = remaining > 0;
+          if (remaining <= 0) {
+            node.textContent = "now";
+            if (button) button.disabled = false;
+            window.clearInterval(timer);
+          }
+        };
+        tick();
+        const timer = window.setInterval(tick, 1000);
+      });
+    })();
+  </script>
+</body>
+</html>

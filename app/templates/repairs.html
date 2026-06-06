@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% set page_title = "Repair Management" %}
+{% set page_subtitle = "Repair register, cost capture, and disposal-candidate escalation." %}
+{% block content %}
+<div class="stack">
+  <section class="surface">
+    <div class="section-head"><h3>Create Repair Entry</h3></div>
+    <form method="post" class="form-grid">
+      <label>Asset <select name="asset_id">{% for asset in assets %}<option value="{{ asset.id }}">{{ asset.asset_code }} - {{ asset.name }}</option>{% endfor %}</select></label>
+      <label>Ticket <select name="ticket_id"><option value="">Optional</option>{% for ticket in tickets %}<option value="{{ ticket.id }}">#{{ ticket.id }} - {{ ticket.asset.asset_code }}</option>{% endfor %}</select></label>
+      <label>Repair Type <input name="repair_type" required></label>
+      <label>Repair Mode <select name="repair_mode"><option value="internal">Internal</option><option value="external">External</option></select></label>
+      <label>Start Date <input type="date" name="repair_start_date"></label>
+      <label>End Date <input type="date" name="repair_end_date"></label>
+      <label>Repair Cost <input type="number" name="repair_cost" value="0"></label>
+      <label>Final Condition <select name="final_condition"><option value="serviceable">Serviceable</option><option value="damaged">Damaged</option><option value="retired">Retired</option></select></label>
+      <label style="grid-column: 1 / -1;">Diagnosis <textarea name="diagnosis"></textarea></label>
+      <label style="grid-column: 1 / -1;">Resolution <textarea name="resolution"></textarea></label>
+      <label style="display:flex;align-items:center;gap:.65rem;"><input type="checkbox" name="warranty_claim" value="1"> Warranty Claim</label>
+      <div class="actions" style="grid-column: 1 / -1;"><button class="btn primary" type="submit">Save Repair Entry</button></div>
+    </form>
+  </section>
+  <section class="surface">
+    <div class="section-head"><h3>Repair Register</h3></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>ID</th><th>Asset</th><th>Mode</th><th>Cost</th><th>Condition</th><th>Notes</th></tr></thead>
+        <tbody>
+          {% for item in repairs %}
+          <tr><td>#{{ item.id }}</td><td>{{ item.asset.asset_code }}</td><td>{{ item.repair_mode }}</td><td>{{ item.repair_cost }}</td><td>{{ item.final_condition }}</td><td>{{ item.diagnosis or "-" }}</td></tr>
+          {% else %}
+          <tr><td colspan="6"><div class="empty-state">No repair entries recorded yet.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

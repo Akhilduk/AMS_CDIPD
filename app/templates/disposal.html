@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% set page_title = "Disposal Management" %}
+{% set page_subtitle = "Candidate identification, request submission, and closure with certificate details." %}
+{% block content %}
+<div class="stack">
+  {% if current_user.role in ["hardware_admin", "super_admin"] %}
+  <section class="surface">
+    <div class="section-head"><h3>Create Disposal Request</h3></div>
+    <form method="post" class="form-grid">
+      <label>Asset <select name="asset_id">{% for asset in candidates %}<option value="{{ asset.id }}">{{ asset.asset_code }} - {{ asset.name }} ({{ asset.status }})</option>{% endfor %}</select></label>
+      <label>Condition <select name="condition"><option value="damaged">Damaged</option><option value="retired">Retired</option><option value="obsolete">Obsolete</option></select></label>
+      <label>Estimated Residual Value <input type="number" name="estimated_residual_value" value="0"></label>
+      <label style="grid-column: 1 / -1;">Reason <textarea name="reason" required></textarea></label>
+      <label style="grid-column: 1 / -1;">Recommendation <textarea name="recommendation"></textarea></label>
+      <div class="actions" style="grid-column: 1 / -1;"><button class="btn primary" type="submit">Submit Disposal Request</button></div>
+    </form>
+  </section>
+  {% endif %}
+  <section class="surface">
+    <div class="section-head"><h3>Disposal Register</h3></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>ID</th><th>Asset</th><th>Status</th><th>Reason</th><th>Certificate</th><th>Document</th><th>Action</th></tr></thead>
+        <tbody>
+          {% for item in disposal_requests %}
+          {% set workflow_document = document_map.get("disposal:" ~ item.id) %}
+          <tr>
+            <td>#{{ item.id }}</td>
+            <td>{{ item.asset.asset_code }}</td>
+            <td>{{ item.status }}</td>
+            <td>{{ item.reason }}</td>
+            <td>{{ item.certificate_number or "-" }}</td>
+            <td>
+              {% if workflow_document %}
+              <div class="actions">
+                <a class="btn ghost" href="/documents/{{ workflow_document.id }}/view">View</a>
+                <a class="btn ghost" href="/documents/{{ workflow_document.id }}">PDF</a>
+              </div>
+              {% else %}
+              <span class="help">No document generated yet.</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if current_user.role in ["director", "super_admin"] and item.status != "closed" %}
+              <form method="post" action="/disposal/{{ item.id }}/close" class="stack">
+                <label>Certificate No <input name="certificate_number" required></label>
+                <label>Method <input name="disposal_method" placeholder="E-waste / Scrap sale" required></label>
+                <label>Vendor/Agency <input name="vendor_agency"></label>
+                <button class="btn secondary" type="submit" data-confirm="Close this disposal request and scrap the asset?">Close Disposal</button>
+              </form>
+              {% else %}
+              <span class="help">{{ item.disposal_method or "-" }}</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6"><div class="empty-state">No disposal requests yet.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

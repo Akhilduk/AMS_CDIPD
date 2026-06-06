@@ -302,7 +302,8 @@ def require_permission(module: str, action: str):
 
 
 def render(request: Request, template: str, context: dict, user: Optional[User] = None):
-    csrf_token = request.cookies.get(CSRF_COOKIE) or secrets.token_urlsafe(32)
+    csrf_token = request.cookies.get(CSRF_COOKIE) or getattr(request.state, "csrf_token", None) or secrets.token_urlsafe(32)
+    request.state.csrf_token = csrf_token
     flash = None
     raw_flash = request.cookies.get(FLASH_COOKIE)
     if raw_flash:

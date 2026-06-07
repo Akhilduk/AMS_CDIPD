@@ -1,36 +1,45 @@
 {% extends "public_base.html" if is_public_reader else "base.html" %}
 {% set title = "Policy Reader - CDIPD Asset Management" %}
 {% set page_title = "Policy Reader" %}
-{% set page_subtitle = "Controlled document view with allocation context, document metadata, and clean section navigation." %}
+{% set page_subtitle = "" %}
 {% block content %}
 <div class="stack policy-reader-stack">
-  <section class="surface policy-hero">
-    <div class="policy-hero-copy">
-      <div class="kicker">{{ policy_meta.document_code }}</div>
-      <h1>{{ policy_meta.title }}</h1>
-      <p class="help">{{ policy_meta.org_name }} | {{ policy_meta.unit_name }}</p>
-      <p class="help">{{ policy_meta.unit_note }}</p>
-      <div class="policy-meta-row">
-        <span>Format {{ policy_meta.format_id }}</span>
-        <span>Version {{ policy.version if policy else policy_meta.version }}</span>
-        <span>Released {{ policy_meta.release_date }}</span>
+  <section class="surface policy-reader-header">
+    <div class="section-head">
+      <div>
+        <div class="kicker">{{ policy_meta.document_code }}</div>
+        <h3>{{ policy_meta.title }}</h3>
       </div>
-      {% if policy %}
-      <div class="policy-meta-row">
-        <span>Policy {{ policy.policy_master.policy_code if policy.policy_master else "-" }}</span>
-        <span>Status {{ policy.status.replace("_", " ").title() }}</span>
-        <span>{{ "Published" if policy.published else "Draft" }}</span>
-      </div>
-      {% endif %}
-    </div>
-    <div class="policy-hero-actions">
-      <img src="/static/img/future-orbit.svg" alt="Policy workspace illustration">
       <div class="actions">
         <a class="btn primary" href="/policy/current" target="_blank">Open PDF</a>
         {% if not is_public_reader %}
-        <a class="btn ghost" href="{{ back_href }}">Back</a>
+        <a class="btn secondary" href="{{ back_href }}">Back</a>
         {% endif %}
       </div>
+    </div>
+    <div class="policy-reader-meta-grid">
+      <div class="summary-tile">
+        <div class="kicker">Organization</div>
+        <div class="main" style="font-size: var(--fs-md);">{{ policy_meta.org_name }}</div>
+        <div class="sub">{{ policy_meta.unit_name }}</div>
+      </div>
+      <div class="summary-tile">
+        <div class="kicker">Version</div>
+        <div class="main" style="font-size: var(--fs-md);">{{ policy.version if policy else policy_meta.version }}</div>
+        <div class="sub">Released {{ policy_meta.release_date }}</div>
+      </div>
+      <div class="summary-tile">
+        <div class="kicker">Format</div>
+        <div class="main" style="font-size: var(--fs-md);">{{ policy_meta.format_id }}</div>
+        <div class="sub">{{ policy_meta.unit_note }}</div>
+      </div>
+      {% if policy %}
+      <div class="summary-tile">
+        <div class="kicker">Policy Status</div>
+        <div class="main" style="font-size: var(--fs-md);">{{ policy.status.replace("_", " ").title() }}</div>
+        <div class="sub">Policy {{ policy.policy_master.policy_code if policy.policy_master else "-" }} | {{ "Published" if policy.published else "Draft" }}</div>
+      </div>
+      {% endif %}
     </div>
   </section>
 

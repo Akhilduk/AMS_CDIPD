@@ -6,21 +6,6 @@
   <title>{{ title or brand.app_name }}</title>
   <link rel="stylesheet" href="/static/css/app.css">
   <style>
-    /* Sticky Top App Bar */
-    .sticky-app-bar {
-      position: sticky;
-      top: 0;
-      z-width: 1000;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 24px;
-      margin-bottom: 24px;
-      z-index: 50;
-    }
-
     .profile-dropdown {
       position: relative;
       display: inline-block;
@@ -101,18 +86,6 @@
       gap: 10px;
     }
 
-    .layout { display: flex; min-height: 100vh; }
-    .sidebar { width: 260px; flex-shrink: 0; background: var(--sidebar-bg); color: var(--sidebar-fg); border-right: 1px solid var(--border); position: sticky; top: 0; height: 100vh; overflow-y: auto; }
-    .content { flex-grow: 1; min-width: 0; background: var(--bg); display: flex; flex-direction: column; }
-    .page-shell { padding: 0 24px 40px; flex-grow: 1; max-width: 1400px; margin: 0 auto; width: 100%; }
-
-    .app-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 32px;
-      padding-top: 8px;
-    }
   </style>
 </head>
 <body>
@@ -125,7 +98,7 @@
           <div class="brand" style="margin-top: 8px;">Asset System</div>
         </div>
 
-        <nav class="sidebar-nav" style="margin-top: 24px;">
+        <nav class="sidebar-nav sidebar-nav-spaced">
           {% for group in sidebar_groups %}
           <div class="sidebar-group">
             <div class="sidebar-group-title">{{ group.label }}</div>
@@ -142,160 +115,95 @@
         <div class="sidebar-footer"></div>
       </div>
     </aside>
+    <button class="sidebar-backdrop" type="button" aria-label="Close sidebar" data-sidebar-close></button>
 
     <main class="content" id="main-content">
-
-      <!-- STICKY TOP APP BAR -->
       <div class="sticky-app-bar">
         <div class="app-bar-left">
           {% if current_user %}
-          <form id="global-search" action="/search" method="get" class="global-search" role="search" aria-label="Global search" style="margin:0;">
-            <div style="position:relative; display:flex; align-items:center;">
-              <span class="header-icon utility-icon" aria-hidden="true" style="position:absolute; left:10px;">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
-              </span>
-              <label class="sr-only" for="global-search-input">Global search</label>
-              <input id="global-search-input" type="search" name="q" value="{{ request.query_params.get('q', '') }}" placeholder="Search assets, employees, tickets..." style="padding-left: 36px; width: 300px; border-radius: 20px; border: 1px solid var(--border);">
-            </div>
+          <button class="btn ghost mobile-only sidebar-toggle-btn" type="button" data-sidebar-toggle aria-label="Toggle navigation">
+            <span class="header-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </span>
+          </button>
+          <form action="/search" method="get" class="global-search" role="search" aria-label="Global search" style="margin:0;">
+            <span class="header-icon utility-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+            </span>
+            <label class="sr-only" for="global-search-input-sticky">Global search</label>
+            <input id="global-search-input-sticky" type="search" name="q" value="{{ request.query_params.get('q', '') }}" placeholder="Search assets, employees, tickets...">
+            <button class="btn secondary search-submit" type="submit">Search</button>
           </form>
           {% endif %}
         </div>
-
-        <div class="app-bar-right" style="display:flex; align-items:center; gap:16px;">
+        <div class="app-bar-right">
           {% if current_user %}
-            <a class="btn ghost header-link-btn" href="/notifications" aria-label="Open notifications" style="position:relative; border-radius:50%; width:40px; height:40px; padding:0; display:flex; justify-content:center; align-items:center;">
-              <span class="header-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10 21a2 2 0 0 0 4 0"></path></svg>
-              </span>
-              {% if unread_notifications %}
-              <span class="badge-dot" aria-hidden="true" style="position:absolute; top:8px; right:10px; width:8px; height:8px; background:var(--danger); border-radius:50%;"></span>
-              <span class="sr-only">{{ unread_notifications }} unread notifications</span>
-              {% endif %}
-            </a>
-
-            <button class="btn ghost header-link-btn theme-toggle" type="button" data-theme-toggle aria-label="Toggle theme" style="border-radius:50%; width:40px; height:40px; padding:0; display:flex; justify-content:center; align-items:center;">
-              <span class="header-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"></path></svg>
-              </span>
-            </button>
-
-            <div class="profile-dropdown">
-              <div class="profile-avatar">
-                <div class="profile-avatar-circle">{{ current_user.full_name[0]|upper }}</div>
-                <span>{{ current_user.full_name.split(' ')[0] }}</span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="m6 9 6 6 6-6"/></svg>
-              </div>
-              <div class="profile-dropdown-content">
-                <div class="profile-dropdown-header">
-                  <div style="font-weight:600;">{{ current_user.full_name }}</div>
-                  <div class="help">{{ current_user.email }}</div>
-                  <div class="help" style="margin-top:4px;">{{ current_user.role.replace("_", " ").title() }}</div>
-                </div>
-                <form method="post" action="/logout">
-                  <div class="profile-dropdown-item">
-                    <button type="submit">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="m16 17 5-5-5-5"></path><path d="M21 12H9"></path></svg>
-                      Log Out
-                    </button>
-                  </div>
-                </form>
-              </div>
+          <a class="btn secondary header-link-btn" href="/notifications" aria-label="Open notifications">
+            <span class="header-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10 21a2 2 0 0 0 4 0"></path></svg>
+            </span>
+            <span>Notifications</span>
+            {% if unread_notifications %}
+            <span class="badge-dot" aria-hidden="true"></span>
+            <span class="sr-only">{{ unread_notifications }} unread notifications</span>
+            {% endif %}
+          </a>
+          <button class="btn ghost header-link-btn theme-toggle" type="button" data-theme-toggle aria-label="Toggle theme">
+            <span class="header-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"></path></svg>
+            </span>
+            <span data-theme-label>Theme: Auto</span>
+          </button>
+          <div class="profile-dropdown">
+            <div class="profile-avatar">
+              <div class="profile-avatar-circle">{{ current_user.full_name[0]|upper }}</div>
+              <span>{{ current_user.full_name.split(' ')[0] }}</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="m6 9 6 6 6-6"/></svg>
             </div>
-
-          {% else %}
-            <button class="btn ghost header-link-btn theme-toggle" type="button" data-theme-toggle aria-label="Toggle theme">
-              <span class="header-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"></path></svg>
-              </span>
-              <span data-theme-label>Theme: Auto</span>
-            </button>
+            <div class="profile-dropdown-content">
+              <div class="profile-dropdown-header">
+                <div style="font-weight:600;">{{ current_user.full_name }}</div>
+                <div class="help">{{ current_user.email }}</div>
+                <div class="help" style="margin-top:4px;">{{ current_user.role.replace("_", " ").title() }}</div>
+              </div>
+              <form method="post" action="/logout">
+                <div class="profile-dropdown-item">
+                  <button type="submit">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="m16 17 5-5-5-5"></path><path d="M21 12H9"></path></svg>
+                    Log Out
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
           {% endif %}
         </div>
       </div>
-      <!-- END STICKY TOP APP BAR -->
 
       <div class="page-shell">
         <header class="app-header">
-          <div class="header-topbar">
-            <div class="header-context">
-              {% if request.url.path not in ["/dashboard", "/login"] %}
-              <button class="btn ghost inline-back-btn" type="button" onclick="history.back()">
-                <span class="header-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>
-                </span>
-                <span>Back</span>
-              </button>
-              {% endif %}
-              {% if breadcrumb %}
-              <div class="breadcrumb" aria-label="Breadcrumb">
-                {% for crumb in breadcrumb %}
-                <a href="{{ crumb.href }}">{{ crumb.label }}</a>
-                {% if not loop.last %}<span class="breadcrumb-sep">&rsaquo;</span>{% endif %}
-                {% endfor %}
-              </div>
-              {% endif %}
-            </div>
-
-            {% if current_user %}
-            <div class="header-utility-bar">
-              <form id="global-search" action="/search" method="get" class="global-search" role="search" aria-label="Global search">
-                <span class="header-icon utility-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
-                </span>
-                <label class="sr-only" for="global-search-input">Global search</label>
-                <input id="global-search-input" type="search" name="q" value="{{ request.query_params.get('q', '') }}" placeholder="Search assets, employees, tickets...">
-                <button class="btn secondary search-submit" type="submit"><span>Search</span></button>
-              </form>
-              <div class="header-toolbar">
-                <a class="btn secondary header-link-btn" href="/notifications" aria-label="Open notifications">
-                  <span class="header-icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10 21a2 2 0 0 0 4 0"></path></svg>
-                  </span>
-                  <span>Notifications</span>
-                  {% if unread_notifications %}
-                  <span class="badge-dot" aria-hidden="true"></span>
-                  <span class="sr-only">{{ unread_notifications }} unread notifications</span>
-                  {% endif %}
-                </a>
-                <form method="post" action="/logout" class="inline-form" aria-label="Log out">
-                  <button class="btn ghost header-link-btn" type="submit">
-                    <span class="header-icon" aria-hidden="true">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="m16 17 5-5-5-5"></path><path d="M21 12H9"></path></svg>
-                    </span>
-                    <span>Log Out</span>
-                  </button>
-                </form>
-                <button class="btn ghost header-link-btn mobile-only" type="button" data-sidebar-toggle aria-label="Toggle sidebar navigation">
-                  <span class="header-icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"></path><path d="M4 12h16"></path><path d="M4 17h16"></path></svg>
-                  </span>
-                  <span>Menu</span>
-                </button>
-                <button class="btn ghost header-link-btn theme-toggle" type="button" data-theme-toggle aria-label="Toggle theme">
-                  <span class="header-icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"></path></svg>
-                  </span>
-                  <span data-theme-label>Theme: Auto</span>
-                </button>
-              </div>
-            </div>
-            {% else %}
-            <div class="header-toolbar">
-              <button class="btn ghost header-link-btn theme-toggle" type="button" data-theme-toggle aria-label="Toggle theme">
-                <span class="header-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"></path></svg>
-                </span>
-                <span data-theme-label>Theme: Auto</span>
-              </button>
-            </div>
-            {% endif %}
-          </div>
-
           <div class="header-body">
             <div class="header-meta">
+              <div class="header-context">
+                {% if page_show_back %}
+                <button class="btn ghost inline-back-btn" type="button" onclick="history.back()">
+                  <span class="header-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>
+                  </span>
+                  <span>Back</span>
+                </button>
+                {% endif %}
+                {% if breadcrumb %}
+                <div class="breadcrumb" aria-label="Breadcrumb">
+                  {% for crumb in breadcrumb %}
+                  <a href="{{ crumb.href }}">{{ crumb.label }}</a>
+                  {% if not loop.last %}<span class="breadcrumb-sep">&rsaquo;</span>{% endif %}
+                  {% endfor %}
+                </div>
+                {% endif %}
+              </div>
               {% if page_kicker %}<div class="kicker">{{ page_kicker }}</div>{% endif %}
               <div class="title">{{ page_title }}</div>
-              {% if page_subtitle %}<div class="subtitle">{{ page_subtitle }}</div>{% endif %}
             </div>
             {% if page_actions %}
             <div class="page-action-bar">
@@ -367,12 +275,28 @@
       });
 
       const sidebarToggle = document.querySelector("[data-sidebar-toggle]");
+      const sidebarClose = document.querySelector("[data-sidebar-close]");
       const layout = document.querySelector(".layout");
       if (sidebarToggle && layout) {
         sidebarToggle.addEventListener("click", function () {
           layout.classList.toggle("sidebar-collapsed");
         });
       }
+      if (sidebarClose && layout) {
+        sidebarClose.addEventListener("click", function () {
+          layout.classList.remove("sidebar-collapsed");
+        });
+      }
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape" && layout) {
+          layout.classList.remove("sidebar-collapsed");
+        }
+      });
+      window.addEventListener("resize", function () {
+        if (window.innerWidth > 1024 && layout) {
+          layout.classList.remove("sidebar-collapsed");
+        }
+      });
 
       const flashDismiss = document.querySelector("[data-dismiss-flash]");
       if (flashDismiss) {

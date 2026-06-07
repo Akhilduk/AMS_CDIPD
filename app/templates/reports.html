@@ -1,24 +1,8 @@
 {% extends "base.html" %}
 {% set page_title = "Reports" %}
-{% set page_subtitle = "Operational analytics, structured drill-downs, and exportable evidence views." %}
+{% set page_subtitle = "" %}
 {% block content %}
 <div class="stack">
-  <section class="surface dashboard-hero report-hero">
-    <div class="dashboard-hero-copy">
-      <div class="kicker">Analytics Hub</div>
-      <h2>Enterprise Reporting</h2>
-      <p class="help">Lifecycle, compliance, and signature evidence surfaced through drill-down reports, filters, and exports.</p>
-      <div class="dashboard-quick-actions">
-        <a class="btn primary" href="/management/reports">Management View</a>
-        <a class="btn secondary" href="/reports/drilldown/assets_all">Asset Ledger</a>
-        <a class="btn secondary" href="/reports/drilldown/documents_signed">Signed Documents</a>
-      </div>
-    </div>
-    <div class="dashboard-hero-visual">
-      <img src="/static/img/future-orbit.svg" alt="Futuristic analytics illustration">
-    </div>
-  </section>
-
   <div class="summary-grid dashboard-summary-grid">
     {% for card in report_summary %}
     <a class="summary-tile dashboard-summary-tile" href="{{ card.href }}">
@@ -29,21 +13,14 @@
     {% endfor %}
   </div>
 
-
-  <section class="surface analytics-panel">
+  <section class="surface report-command-strip">
     <div class="section-head">
-      <div>
-        <h3>Reports Visual Analytics</h3>
-        <div class="help">Visualized metrics from reports summary.</div>
+      <h3>Report Shortcuts</h3>
+      <div class="actions report-action-cluster">
+        <a class="btn primary" href="/management/reports">Management View</a>
+        <a class="btn secondary" href="/reports/drilldown/assets_all">Asset Ledger</a>
+        <a class="btn secondary" href="/reports/drilldown/documents_signed">Signed Documents</a>
       </div>
-    </div>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 16px;">
-        <div style="position: relative; height:300px;">
-            <canvas id="barChart"></canvas>
-        </div>
-        <div style="position: relative; height:300px; display:flex; justify-content:center;">
-            <canvas id="doughnutChart"></canvas>
-        </div>
     </div>
   </section>
 
@@ -67,71 +44,55 @@
             'rgba(108, 117, 125, 0.8)'
         ];
 
-        const barCtx = document.getElementById('barChart').getContext('2d');
-        new Chart(barCtx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Report Metrics',
-                    data: data,
-                    backgroundColor: colors,
-                    borderRadius: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
+        const barNode = document.getElementById('barChart');
+        if (barNode) {
+            const barCtx = barNode.getContext('2d');
+            new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Report Metrics',
+                        data: data,
+                        backgroundColor: colors,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    }
                 }
-            }
-        });
+            });
+        }
 
-        const doughnutCtx = document.getElementById('doughnutChart').getContext('2d');
-        new Chart(doughnutCtx, {
-            type: 'doughnut',
-            data: {
-                labels: labels,
-                datasets: [{
-                    data: data,
-                    backgroundColor: colors,
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '70%',
-                plugins: {
-                    legend: { position: 'right' }
+        const doughnutNode = document.getElementById('doughnutChart');
+        if (doughnutNode) {
+            const doughnutCtx = doughnutNode.getContext('2d');
+            new Chart(doughnutCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors,
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: { position: 'right' }
+                    }
                 }
-            }
-        });
+            });
+        }
     });
   </script>
-
-  {% if report_summary %}
-  <section class="surface analytics-panel">
-    <div class="section-head">
-      <div>
-        <h3>Report Snapshot</h3>
-        <div class="help">Relative demand across currently surfaced analytics groups.</div>
-      </div>
-    </div>
-    <div class="metric-bars" data-metric-bars>
-      {% for card in report_summary %}
-      <div class="metric-bar" data-value="{{ card.value if card.value is number else 0 }}">
-        <div class="metric-bar-head">
-          <span>{{ card.label }}</span>
-          <strong>{{ card.value }}</strong>
-        </div>
-        <div class="metric-bar-track"><span class="metric-bar-fill"></span></div>
-      </div>
-      {% endfor %}
-    </div>
-  </section>
-  {% endif %}
 
   <section class="surface">
     <div class="section-head">
@@ -251,6 +212,28 @@
       </table>
     </div>
   </section>
+
+  {% if report_summary %}
+  <section class="surface analytics-panel">
+    <div class="section-head">
+      <div>
+        <h3>Report Snapshot</h3>
+        <div class="help">Relative demand across the current report groups.</div>
+      </div>
+    </div>
+    <div class="metric-bars" data-metric-bars>
+      {% for card in report_summary %}
+      <div class="metric-bar" data-value="{{ card.value if card.value is number else 0 }}">
+        <div class="metric-bar-head">
+          <span>{{ card.label }}</span>
+          <strong>{{ card.value }}</strong>
+        </div>
+        <div class="metric-bar-track"><span class="metric-bar-fill"></span></div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
 </div>
 
 <script>

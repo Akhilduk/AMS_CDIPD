@@ -20,6 +20,29 @@ async def users_page(request: Request, db: Session = Depends(get_db)):
     roles = db.scalars(select(Role).where(Role.active == True).order_by(Role.name)).all()
     return render(request, "users.html", {"users": users, "roles": roles, "user_role_map": {user.id: [item.role.code for item in user.user_roles if item.role] for user in users}}, current_user)
 
+@router.get("/users/{user_id}", response_class=HTMLResponse)
+@require_roles("super_admin")
+@require_permission("users", "view")
+async def user_detail_page(user_id: int, request: Request, db: Session = Depends(get_db)):
+    current_user = get_current_user(request, db)
+    user = db.get(User, user_id)
+    if not user:
+        raise HTTPException(status_code=404)
+    roles = db.scalars(select(Role).where(Role.active == True).order_by(Role.name)).all()
+    user_role_codes = [item.role.code for item in user.user_roles if item.role]
+    return render(
+        request,
+        "user_detail.html",
+        {
+            "managed_user": user,
+            "roles": roles,
+            "user_role_codes": user_role_codes,
+            "page_title": user.full_name,
+            "page_subtitle": "",
+        },
+        current_user,
+    )
+
 @router.post("/users")
 @require_roles("super_admin")
 @require_permission("users", "create")
@@ -85,7 +108,8 @@ async def toggle_user_active(user_id: int, request: Request, db: Session = Depen
     db.commit()
     action = "activate" if user.active else "deactivate"
     log_event(db, "users", action, current_user.full_name, user.email, new_value=f"active={user.active}")
-    return redirect_with_flash("/users", f"User {user.full_name} {'activated' if user.active else 'deactivated'}.")
+    redirect_target = request.query_params.get("next") or "/users"
+    return redirect_with_flash(redirect_target, f"User {user.full_name} {'activated' if user.active else 'deactivated'}.")
 
 
 @router.post("/users/{user_id}/reset-password")
@@ -97,12 +121,14 @@ async def admin_reset_password(user_id: int, request: Request, password: str = F
     if not user:
         raise HTTPException(status_code=404)
     if len(password) < 8:
-        return redirect_with_flash("/users", "Password must be at least 8 characters.", "error")
+        redirect_target = request.query_params.get("next") or "/users"
+        return redirect_with_flash(redirect_target, "Password must be at least 8 characters.", "error")
     user.password_hash = hash_password(password)
     user.failed_login_attempts = 0
     db.commit()
     log_event(db, "users", "password_reset", current_user.full_name, user.email, new_value="admin_reset")
-    return redirect_with_flash("/users", f"Password reset for {user.full_name}.")
+    redirect_target = request.query_params.get("next") or "/users"
+    return redirect_with_flash(redirect_target, f"Password reset for {user.full_name}.")
 
 
 @router.post("/users/{user_id}/assign-roles")
@@ -114,15 +140,16 @@ async def assign_user_roles(user_id: int, request: Request, db: Session = Depend
     if not user:
         raise HTTPException(status_code=404)
     form = await request.form()
+    redirect_target = request.query_params.get("next") or "/users"
     selected_role_codes = form.getlist("roles")
     primary_role = form.get("primary_role")
     if not selected_role_codes:
-        return redirect_with_flash("/users", "Select at least one role.", "error")
+        return redirect_with_flash(redirect_target, "Select at least one role.", "error")
     if primary_role not in selected_role_codes:
-        return redirect_with_flash("/users", "Primary role must be part of the assigned role set.", "error")
+        return redirect_with_flash(redirect_target, "Primary role must be part of the assigned role set.", "error")
     selected_roles = db.scalars(select(Role).where(Role.code.in_(selected_role_codes), Role.active == True)).all()
     if len(selected_roles) != len(set(selected_role_codes)):
-        return redirect_with_flash("/users", "One or more selected roles are invalid.", "error")
+        return redirect_with_flash(redirect_target, "One or more selected roles are invalid.", "error")
     for existing in list(user.user_roles):
         db.delete(existing)
     db.flush()
@@ -132,7 +159,7 @@ async def assign_user_roles(user_id: int, request: Request, db: Session = Depend
     user.multiple_roles_enabled = len(selected_roles) > 1
     db.commit()
     log_event(db, "users", "role_assigned", current_user.full_name, user.email, new_value=",".join(sorted(selected_role_codes)))
-    return redirect_with_flash("/users", f"Roles updated for {user.full_name}.")
+    return redirect_with_flash(redirect_target, f"Roles updated for {user.full_name}.")
 
 
 @router.get("/admin/roles", response_class=HTMLResponse)

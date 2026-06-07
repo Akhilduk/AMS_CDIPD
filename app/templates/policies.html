@@ -10,51 +10,6 @@
     <div class="summary-tile"><div class="kicker">Published</div><div class="main">{{ 1 if active_policy else 0 }}</div><div class="sub">Single active policy version</div></div>
   </div>
 
-  <div class="split-card two-col">
-    <section class="surface" style="padding: 24px;">
-      <div class="section-head">
-        <div>
-          <div class="kicker">Configuration</div>
-          <h3>Create Policy Master</h3>
-        </div>
-      </div>
-      <form method="post" action="/policies/masters" class="form-grid compact-form">
-        <label>Policy Code <input name="policy_code" placeholder="POL-ASSET-RETURN" required></label>
-        <label>Title <input name="title" required></label>
-        <label>Owner Role
-          <select name="owner_role">
-            <option value="hr_admin">HR Admin</option>
-            <option value="hardware_admin">Hardware Admin</option>
-            <option value="super_admin">Super Admin</option>
-          </select>
-        </label>
-        <label style="display:flex;align-items:center;gap:.65rem;margin-top:1.8rem;"><input type="checkbox" name="active" checked> Active</label>
-        <label style="grid-column: 1 / -1;">Description <textarea name="description"></textarea></label>
-        <div class="actions" style="grid-column: 1 / -1; justify-content: flex-end;"><button class="btn primary" type="submit">Create Master</button></div>
-      </form>
-    </section>
-
-    <section class="surface" style="padding: 24px;">
-      <div class="section-head">
-        <div>
-          <div class="kicker">Content</div>
-          <h3>Create Policy Version</h3>
-        </div>
-      </div>
-      <form method="post" action="/policies/versions" class="form-grid compact-form">
-        <label>Policy Master
-          <select name="policy_master_id">{% for item in masters %}<option value="{{ item.id }}">{{ item.policy_code }} - {{ item.title }}</option>{% endfor %}</select>
-        </label>
-        <label>Title <input name="title" value="{{ active_policy.title if active_policy else 'Asset Usage Policy' }}" required></label>
-        <label>Version <input name="version" placeholder="v1.1" required></label>
-        <label>Effective Date <input type="date" name="effective_date"></label>
-        <label style="grid-column: 1 / -1;">Approval Remarks <input name="approval_remarks" placeholder="Draft rationale or review note"></label>
-        <label style="grid-column: 1 / -1;">Version Body <textarea name="body" required>{% if active_policy %}{{ active_policy.body }}{% endif %}</textarea></label>
-        <div class="actions" style="grid-column: 1 / -1; justify-content: flex-end;"><button class="btn primary" type="submit">Create Draft Version</button></div>
-      </form>
-    </section>
-  </div>
-
   <section class="surface">
     <div class="section-head">
       <div>
@@ -200,5 +155,50 @@
       </table>
     </div>
   </section>
+
+  <div class="split-card two-col">
+    <section class="surface" style="padding: 24px;">
+      <div class="section-head">
+        <div>
+          <div class="kicker">Configuration</div>
+          <h3>Create Policy Master</h3>
+        </div>
+      </div>
+      <form method="post" action="/policies/masters" class="form-grid compact-form">
+        <label>Policy Code <input name="policy_code" placeholder="POL-ASSET-RETURN" required></label>
+        <label>Title <input name="title" required></label>
+        <label>Owner Role
+          <select name="owner_role">
+            <option value="hr_admin">HR Admin</option>
+            <option value="hardware_admin">Hardware Admin</option>
+            <option value="super_admin">Super Admin</option>
+          </select>
+        </label>
+        <label style="display:flex;align-items:center;gap:.65rem;margin-top:1.8rem;"><input type="checkbox" name="active" checked> Active</label>
+        <label style="grid-column: 1 / -1;">Description <textarea name="description"></textarea></label>
+        <div class="actions" style="grid-column: 1 / -1; justify-content: flex-end;"><button class="btn primary" type="submit">Create Master</button></div>
+      </form>
+    </section>
+
+    <section class="surface" style="padding: 24px;">
+      <div class="section-head">
+        <div>
+          <div class="kicker">Content</div>
+          <h3>Create Policy Version</h3>
+        </div>
+      </div>
+      <form method="post" action="/policies/versions" class="form-grid compact-form">
+        <label>Policy Master
+          <select name="policy_master_id">{% for item in masters %}<option value="{{ item.id }}">{{ item.policy_code }} - {{ item.title }}</option>{% endfor %}</select>
+        </label>
+        <label>Title <input name="title" value="{{ active_policy.title if active_policy else 'Asset Usage Policy' }}" required></label>
+        <label>Version <input name="version" placeholder="v1.1" required></label>
+        <label>Effective Date <input type="date" name="effective_date"></label>
+        <label style="grid-column: 1 / -1;">Approval Remarks <input name="approval_remarks" placeholder="Draft rationale or review note"></label>
+        <label style="grid-column: 1 / -1;">Version Body <textarea name="body" required>{% if active_policy %}{{ active_policy.body }}{% endif %}</textarea></label>
+        <div class="actions" style="grid-column: 1 / -1; justify-content: flex-end;"><button class="btn primary" type="submit">Create Draft Version</button></div>
+      </form>
+    </section>
+  </div>
 </div>
 {% endblock %}

@@ -1,15 +1,10 @@
 {% extends "base.html" %}
 {% set page_title = "Dashboard" %}
-{% set page_subtitle = "Role-aware operations, queues, and analytics." %}
+{% set page_subtitle = "" %}
 {% macro status_badge(value) %}<span class="status {{ (value|string|lower).replace(' ', '_') }}">{{ (value|string).replace('_', ' ').title() }}</span>{% endmacro %}
 {% block content %}
 <div class="stack dashboard-stack dashboard-stack-compact">
-  <section class="surface dashboard-command">
-    <div class="dashboard-command-main">
-      <div class="kicker">Command Center</div>
-      <h2>{{ dashboard_role.replace("_", " ").title() }} Dashboard</h2>
-      <p class="help">Current queues, quick actions, and live operational indicators for the assigned workspace.</p>
-    </div>
+  <section class="surface dashboard-command dashboard-command-compact">
     <div class="dashboard-command-actions">
       {% if dashboard_role == "employee" %}
       <a class="btn primary" href="/allocations">My Allocations</a>

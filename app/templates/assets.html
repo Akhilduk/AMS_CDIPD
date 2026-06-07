@@ -9,38 +9,6 @@
     <div class="summary-tile"><div class="kicker">Locations</div><div class="main">{{ locations|length }}</div><div class="sub">Assignable operating locations</div></div>
   </div>
 
-  {% if current_user.role != "auditor" %}
-  <section class="surface">
-    <div class="section-head">
-      <div>
-        <div class="eyebrow">Inventory Intake</div>
-        <h3>Register Asset</h3>
-      </div>
-    </div>
-    <form method="post" class="form-grid compact-form">
-      <label>Asset Name <input name="name" minlength="3" required></label>
-      <label>Model <input name="model" minlength="2" required></label>
-      <label>Serial Number <input name="serial_number" minlength="4" required></label>
-      <label>Category
-        <select name="category_id">{% for item in categories %}<option value="{{ item.id }}">{{ item.name }}</option>{% endfor %}</select>
-      </label>
-      <label>Vendor
-        <select name="vendor_id">{% for item in vendors %}<option value="{{ item.id }}">{{ item.name }}</option>{% endfor %}</select>
-      </label>
-      <label>Location
-        <select name="location_id">{% for item in locations %}<option value="{{ item.id }}">{{ item.name }}</option>{% endfor %}</select>
-      </label>
-      <label style="grid-column: 1 / -1;">Specification <textarea name="specification"></textarea></label>
-      <div class="actions" style="grid-column: 1 / -1;"><button class="btn primary" type="submit">Create Asset</button></div>
-    </form>
-    <form method="post" action="/assets/bulk-upload" enctype="multipart/form-data" class="actions">
-      <input type="file" name="file" accept=".csv" required>
-      <button class="btn secondary" type="submit">Bulk Upload CSV</button>
-    </form>
-    <div class="help">CSV columns: `name,model,serial_number,category_id,vendor_id,location_id,specification`</div>
-  </section>
-  {% endif %}
-
   <section class="surface">
     <div class="section-head">
       <div>
@@ -74,5 +42,37 @@
       </table>
     </div>
   </section>
+
+  {% if current_user.role != "auditor" %}
+  <section class="surface">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Inventory Intake</div>
+        <h3>Register Asset</h3>
+      </div>
+    </div>
+    <form method="post" class="form-grid compact-form">
+      <label>Asset Name <input name="name" minlength="3" required></label>
+      <label>Model <input name="model" minlength="2" required></label>
+      <label>Serial Number <input name="serial_number" minlength="4" required></label>
+      <label>Category
+        <select name="category_id">{% for item in categories %}<option value="{{ item.id }}">{{ item.name }}</option>{% endfor %}</select>
+      </label>
+      <label>Vendor
+        <select name="vendor_id">{% for item in vendors %}<option value="{{ item.id }}">{{ item.name }}</option>{% endfor %}</select>
+      </label>
+      <label>Location
+        <select name="location_id">{% for item in locations %}<option value="{{ item.id }}">{{ item.name }}</option>{% endfor %}</select>
+      </label>
+      <label style="grid-column: 1 / -1;">Specification <textarea name="specification"></textarea></label>
+      <div class="actions" style="grid-column: 1 / -1;"><button class="btn primary" type="submit">Create Asset</button></div>
+    </form>
+    <form method="post" action="/assets/bulk-upload" enctype="multipart/form-data" class="actions">
+      <input type="file" name="file" accept=".csv" required>
+      <button class="btn secondary" type="submit">Bulk Upload CSV</button>
+    </form>
+    <div class="help">CSV columns: `name,model,serial_number,category_id,vendor_id,location_id,specification`</div>
+  </section>
+  {% endif %}
 </div>
 {% endblock %}

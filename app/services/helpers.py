@@ -390,6 +390,8 @@ def require_permission(module: str, action: str):
 def render(request: Request, template: str, context: dict, user: Optional[User] = None):
     csrf_token = request.cookies.get(CSRF_COOKIE) or getattr(request.state, "csrf_token", None) or secrets.token_urlsafe(32)
     request.state.csrf_token = csrf_token
+    path_parts = [part for part in request.url.path.split("/") if part]
+    default_show_back = len(path_parts) > 1
     flash = None
     raw_flash = request.cookies.get(FLASH_COOKIE)
     if raw_flash:
@@ -407,6 +409,7 @@ def render(request: Request, template: str, context: dict, user: Optional[User] 
             "nav_items": build_nav_items(user),
             "sidebar_groups": build_sidebar_groups(user),
             "active_path": request.url.path,
+            "page_show_back": context.get("page_show_back", default_show_back),
             "role_switch_roles": get_user_roles(user),
             "unread_notifications": sum(1 for item in user.notifications if not item.is_read) if user else 0,
             "theme_settings_enabled": True,

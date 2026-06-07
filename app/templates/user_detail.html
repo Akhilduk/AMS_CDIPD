@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% set page_title = managed_user.full_name %}
+{% set page_subtitle = "" %}
+{% block content %}
+<div class="stack">
+  <div class="summary-grid">
+    <div class="summary-tile">
+      <div class="kicker">Employee</div>
+      <div class="main" style="font-size: var(--fs-lg);">{{ managed_user.employee_code }}</div>
+      <div class="sub">{{ managed_user.email }}</div>
+    </div>
+    <div class="summary-tile">
+      <div class="kicker">Primary Role</div>
+      <div class="main" style="font-size: var(--fs-lg);">{{ managed_user.role.replace("_", " ").title() }}</div>
+      <div class="sub">{{ managed_user.department }}</div>
+    </div>
+    <div class="summary-tile">
+      <div class="kicker">Account Status</div>
+      <div class="main" style="font-size: var(--fs-lg);">{{ "Active" if managed_user.active else "Inactive" }}</div>
+      <div class="sub">Last login {{ managed_user.last_login.strftime("%d %b %Y %H:%M") if managed_user.last_login else "-" }}</div>
+    </div>
+  </div>
+
+  <div class="grid two-col">
+    <section class="surface">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Profile</div>
+          <h3>User Summary</h3>
+        </div>
+      </div>
+      <div class="details-grid">
+        <div><span class="muted">Name</span><div>{{ managed_user.full_name }}</div></div>
+        <div><span class="muted">Designation</span><div>{{ managed_user.designation or "-" }}</div></div>
+        <div><span class="muted">Mobile</span><div>{{ managed_user.mobile or "-" }}</div></div>
+        <div><span class="muted">Reporting Manager</span><div>{{ managed_user.reporting_manager or "-" }}</div></div>
+        <div><span class="muted">Employee Type</span><div>{{ managed_user.employee_type or "-" }}</div></div>
+        <div><span class="muted">Joining Date</span><div>{{ managed_user.joining_date or "-" }}</div></div>
+      </div>
+    </section>
+
+    <section class="surface">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Controls</div>
+          <h3>Account Actions</h3>
+        </div>
+      </div>
+      <div class="stack">
+        <form method="post" action="/users/{{ managed_user.id }}/toggle-active?next=/users/{{ managed_user.id }}">
+          <button class="btn {% if managed_user.active %}secondary{% else %}primary{% endif %}" type="submit" data-confirm="Change active status for {{ managed_user.full_name }}?">{{ "Deactivate User" if managed_user.active else "Activate User" }}</button>
+        </form>
+        <form method="post" action="/users/{{ managed_user.id }}/reset-password?next=/users/{{ managed_user.id }}" class="form-grid compact-form">
+          <label style="grid-column: 1 / -1;">New Password <input name="password" type="password" minlength="8" placeholder="Enter a new password" required></label>
+          <div class="actions" style="grid-column: 1 / -1;">
+            <button class="btn secondary" type="submit" data-confirm="Reset password for {{ managed_user.full_name }}?">Reset Password</button>
+          </div>
+        </form>
+      </div>
+    </section>
+  </div>
+
+  <section class="surface">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Roles</div>
+        <h3>Role Assignment</h3>
+      </div>
+    </div>
+    <form method="post" action="/users/{{ managed_user.id }}/assign-roles?next=/users/{{ managed_user.id }}" class="form-grid compact-form">
+      <label>Primary Role
+        <select name="primary_role">
+          {% for role in roles %}
+          <option value="{{ role.code }}" {% if role.code == managed_user.role %}selected{% endif %}>{{ role.name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <div style="grid-column: 1 / -1;">
+        <div class="muted" style="margin-bottom: 8px;">Assigned Roles</div>
+        <div class="chip-row">
+          {% for role in roles %}
+          <label class="chip selectable-chip">
+            <input type="checkbox" name="roles" value="{{ role.code }}" {% if role.code in user_role_codes %}checked{% endif %}>
+            {{ role.name }}
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="actions" style="grid-column: 1 / -1;">
+        <a class="btn ghost" href="/users">Back to User Register</a>
+        <button class="btn primary" type="submit" data-confirm="Update role assignments for {{ managed_user.full_name }}?">Save Role Assignment</button>
+      </div>
+    </form>
+  </section>
+</div>
+{% endblock %}

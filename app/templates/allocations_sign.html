@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% set page_title = "Allocation Signature" %}
-{% set page_subtitle = "Review the issued asset, confirm the governing policy, and complete OTP signing." %}
+{% set page_subtitle = "" %}
 {% block content %}
 <div class="stack">
   <section class="surface sign-shell">
@@ -22,7 +22,7 @@
           </div>
           <div class="detail-card">
             <div class="eyebrow">Category</div>
-            <strong>{{ allocation.asset.category or "N/A" }}</strong>
+            <strong>{{ allocation.asset.category.name if allocation.asset.category else "N/A" }}</strong>
             <div class="help">Status {{ allocation.status.replace("_", " ").title() }}</div>
           </div>
           <div class="detail-card">
@@ -58,9 +58,6 @@
         <form method="post" action="/allocations/{{ allocation.id }}/send-otp">
           <button class="btn primary auth-submit" type="submit">Request OTP</button>
         </form>
-        <div class="actions" style="margin-top: 16px;">
-          <a class="btn ghost" href="/allocations">Back to Allocations</a>
-        </div>
         {% else %}
         <div class="panel-note sign-note sign-note-success">
           OTP is active and ready for verification.<br>
@@ -74,7 +71,6 @@
             <input id="otp_code" type="text" name="otp_code" pattern="[0-9]{6}" maxlength="6" inputmode="numeric" placeholder="000000" required autofocus>
           </div>
           <div class="actions sign-actions">
-            <a class="btn ghost" href="/allocations">Back to Allocations</a>
             <button class="btn primary" type="submit" data-confirm="Sign this allocation with your OTP?">Sign and Confirm</button>
           </div>
         </form>

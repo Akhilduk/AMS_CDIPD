@@ -5,7 +5,7 @@
 <div class="stack">
   <section class="surface">
     <div class="section-head"><h3>Create Repair Entry</h3></div>
-    <form method="post" class="form-grid">
+    <form method="post" class="form-grid compact-form">
       <label>Asset <select name="asset_id">{% for asset in assets %}<option value="{{ asset.id }}">{{ asset.asset_code }} - {{ asset.name }}</option>{% endfor %}</select></label>
       <label>Ticket <select name="ticket_id"><option value="">Optional</option>{% for ticket in tickets %}<option value="{{ ticket.id }}">#{{ ticket.id }} - {{ ticket.asset.asset_code }}</option>{% endfor %}</select></label>
       <label>Repair Type <input name="repair_type" required></label>
@@ -29,7 +29,13 @@
           {% for item in repairs %}
           <tr><td>#{{ item.id }}</td><td>{{ item.asset.asset_code }}</td><td>{{ item.repair_mode }}</td><td>{{ item.repair_cost }}</td><td>{{ item.final_condition }}</td><td>{{ item.diagnosis or "-" }}</td></tr>
           {% else %}
-          <tr><td colspan="6"><div class="empty-state">No repair entries recorded yet.</div></td></tr>
+          <tr><td colspan="6"><div class="empty-state">
+            <svg class="empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+            No repair entries recorded yet.</div></td></tr>
           {% endfor %}
         </tbody>
       </table>

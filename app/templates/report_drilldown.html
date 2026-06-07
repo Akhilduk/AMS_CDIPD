@@ -58,7 +58,13 @@
           {% for row in report.rows %}
           <tr>{% for cell in row %}<td>{{ cell }}</td>{% endfor %}</tr>
           {% else %}
-          <tr><td colspan="{{ report.headers|length }}"><div class="empty-state">No rows available for this report.</div></td></tr>
+          <tr><td colspan="{{ report.headers|length }}"><div class="empty-state">
+            <svg class="empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+            No rows available for this report.</div></td></tr>
           {% endfor %}
         </tbody>
       </table>

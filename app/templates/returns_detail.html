@@ -26,7 +26,7 @@
       </div>
     </div>
 
-    <div class="form-grid" style="margin-top: 20px;">
+    <div class="form-grid compact-form" style="margin-top: 20px;">
       <div class="policy-summary">
         <h4>Return Summary</h4>
         <p><strong>Asset:</strong> {{ item.asset.asset_code }} — {{ item.asset.name }}</p>
@@ -45,7 +45,7 @@
     <section class="surface" style="margin-top: 18px;">
       <div class="section-head"><h4>Verification Actions</h4></div>
       {% if current_user.role in ["hardware_admin", "hr_admin", "super_admin"] %}
-      <form method="post" action="/returns/{{ item.id }}/verify" class="form-grid">
+      <form method="post" action="/returns/{{ item.id }}/verify" class="form-grid compact-form">
         <label>Condition Notes <textarea name="condition_notes" rows="3" required>{{ item.condition_notes or "" }}</textarea></label>
         <label><input type="checkbox" name="qr_verified" value="1" {% if item.qr_verified %}checked{% endif %}> QR verified</label>
         <label>Liability Amount <input type="number" name="liability_amount" value="{{ item.liability_amount or 0 }}"></label>
@@ -61,7 +61,13 @@
         </div>
       </form>
       {% else %}
-      <div class="empty-state">Only administrators can complete the physical verification and clearance workflow.</div>
+      <div class="empty-state">
+            <svg class="empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+            Only administrators can complete the physical verification and clearance workflow.</div>
       {% endif %}
     </section>
 

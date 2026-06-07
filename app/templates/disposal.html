@@ -6,7 +6,7 @@
   {% if current_user.role in ["hardware_admin", "super_admin"] %}
   <section class="surface">
     <div class="section-head"><h3>Create Disposal Request</h3></div>
-    <form method="post" class="form-grid">
+    <form method="post" class="form-grid compact-form">
       <label>Asset <select name="asset_id">{% for asset in candidates %}<option value="{{ asset.id }}">{{ asset.asset_code }} - {{ asset.name }} ({{ asset.status }})</option>{% endfor %}</select></label>
       <label>Condition <select name="condition"><option value="damaged">Damaged</option><option value="retired">Retired</option><option value="obsolete">Obsolete</option></select></label>
       <label>Estimated Residual Value <input type="number" name="estimated_residual_value" value="0"></label>
@@ -54,7 +54,13 @@
             </td>
           </tr>
           {% else %}
-          <tr><td colspan="6"><div class="empty-state">No disposal requests yet.</div></td></tr>
+          <tr><td colspan="6"><div class="empty-state">
+            <svg class="empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+            No disposal requests yet.</div></td></tr>
           {% endfor %}
         </tbody>
       </table>

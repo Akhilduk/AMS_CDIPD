@@ -293,7 +293,7 @@
 
           <div class="header-body">
             <div class="header-meta">
-              <div class="kicker">Dashboard</div>
+              {% if page_kicker %}<div class="kicker">{{ page_kicker }}</div>{% endif %}
               <div class="title">{{ page_title }}</div>
               {% if page_subtitle %}<div class="subtitle">{{ page_subtitle }}</div>{% endif %}
             </div>

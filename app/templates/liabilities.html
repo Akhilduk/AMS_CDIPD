@@ -5,7 +5,7 @@
 <div class="stack">
   <section class="surface">
     <div class="section-head"><h3>Create Liability</h3></div>
-    <form method="post" class="form-grid">
+    <form method="post" class="form-grid compact-form">
       <label>Employee <select name="employee_id">{% for employee in employees %}<option value="{{ employee.id }}">{{ employee.full_name }}</option>{% endfor %}</select></label>
       <label>Asset <select name="asset_id"><option value="">Optional</option>{% for asset in assets %}<option value="{{ asset.id }}">{{ asset.asset_code }}</option>{% endfor %}</select></label>
       <label>Type <input name="liability_type" placeholder="Lost asset / Damage / Missing accessory" required></label>
@@ -23,7 +23,13 @@
           {% for item in liabilities %}
           <tr><td>#{{ item.id }}</td><td>{{ item.employee.full_name }}</td><td>{{ item.asset.asset_code if item.asset else '-' }}</td><td>{{ item.liability_type }}</td><td>{{ item.amount }}</td><td>{{ item.recovery_status }}</td><td>{{ item.hr_approval_status }}</td></tr>
           {% else %}
-          <tr><td colspan="7"><div class="empty-state">No liabilities recorded yet.</div></td></tr>
+          <tr><td colspan="7"><div class="empty-state">
+            <svg class="empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+            No liabilities recorded yet.</div></td></tr>
           {% endfor %}
         </tbody>
       </table>

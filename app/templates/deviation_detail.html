@@ -1,16 +1,54 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="surface actions"><a class="btn secondary" href="/compliance/deviations">Back</a></div>
-<section class="surface tabs">
-  <div class="section-title">Overview</div>
-  <p><strong>Status:</strong> <span class="badge">{{ item.status }}</span></p>
-  <p><strong>Source:</strong> {{ item.source_module }} {{ item.source_reference }}</p>
-  <p><strong>Severity:</strong> {{ item.severity }}</p>
-</section>
-<section class="surface">
-  <div class="section-title">CAPA</div>
-  <p><strong>Corrective action:</strong> {{ item.corrective_action or '-' }}</p>
-  <p><strong>Preventive action:</strong> {{ item.preventive_action or '-' }}</p>
-  <p><strong>Closure evidence:</strong> {{ item.closure_evidence or '-' }}</p>
-</section>
+<div class="actions" style="margin-bottom: 24px;">
+  <a class="btn secondary" href="/compliance/deviations">← Back to Deviations</a>
+</div>
+
+<div class="split-card">
+  <section class="surface">
+    <div class="section-head">
+      <div>
+        <div class="kicker">Context</div>
+        <h3>Overview</h3>
+      </div>
+    </div>
+    <div class="kpi-grid" style="margin-top: 16px;">
+      <div class="kpi-card">
+        <div class="kpi-label">Status</div>
+        <div class="kpi-value"><span class="badge">{{ item.status|replace('_', ' ')|title }}</span></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Source</div>
+        <div class="kpi-value">{{ item.source_module }} <span class="help">{{ item.source_reference }}</span></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Severity</div>
+        <div class="kpi-value"><span class="badge badge-{{ item.severity }}">{{ item.severity|title }}</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="surface">
+    <div class="section-head">
+      <div>
+        <div class="kicker">Actions</div>
+        <h3>CAPA</h3>
+      </div>
+    </div>
+    <div class="stack" style="margin-top: 16px;">
+      <div>
+        <strong>Corrective action:</strong>
+        <div class="panel-note">{{ item.corrective_action or '-' }}</div>
+      </div>
+      <div>
+        <strong>Preventive action:</strong>
+        <div class="panel-note">{{ item.preventive_action or '-' }}</div>
+      </div>
+      <div>
+        <strong>Closure evidence:</strong>
+        <div class="panel-note">{{ item.closure_evidence or '-' }}</div>
+      </div>
+    </div>
+  </section>
+</div>
 {% endblock %}

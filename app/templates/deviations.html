@@ -1,16 +1,65 @@
 {% extends "base.html" %}
 {% block content %}
 <section class="surface">
+  <div class="section-head"><h3>Create Compliance Deviation</h3></div>
   <form method="post" action="/compliance/deviations" class="form-grid">
-    <label>Source module<input name="source_module" required placeholder="QR mismatch, Return overdue, Policy unsigned..."></label>
-    <label>Severity<select name="severity"><option>low</option><option selected>medium</option><option>high</option><option>critical</option></select></label>
-    <label>Corrective action<textarea name="corrective_action"></textarea></label>
-    <label>Preventive action<textarea name="preventive_action"></textarea></label>
-    <button class="btn primary" type="submit">Create deviation</button>
+    <div class="two-col">
+      <label>Source module<input name="source_module" required placeholder="QR mismatch, Return overdue, Policy unsigned..."></label>
+      <label>Severity<select name="severity"><option>low</option><option selected>medium</option><option>high</option><option>critical</option></select></label>
+    </div>
+    <div class="two-col">
+      <label>Corrective action<textarea name="corrective_action"></textarea></label>
+      <label>Preventive action<textarea name="preventive_action"></textarea></label>
+    </div>
+    <div class="actions" style="margin-top: 12px; justify-content: flex-end;">
+      <button class="btn primary" type="submit">Create deviation</button>
+    </div>
   </form>
 </section>
 <section class="surface">
-  <form method="get" class="actions"><input name="q" value="{{ q }}" placeholder="Search"><select name="status"><option value="">All status</option>{% for s in ['open','under_review','corrective_action_pending','closed','reopened'] %}<option value="{{ s }}" {% if status==s %}selected{% endif %}>{{ s }}</option>{% endfor %}</select><button class="btn secondary" type="submit">Filter</button></form>
-  <table><thead><tr><th>No.</th><th>Source</th><th>Severity</th><th>Responsible</th><th>Due</th><th>Status</th><th>Action</th></tr></thead><tbody>{% for item in rows %}<tr><td>{{ item.deviation_number }}</td><td>{{ item.source_module }}</td><td><span class="badge">{{ item.severity }}</span></td><td>{{ item.responsible_person.full_name if item.responsible_person else '-' }}</td><td>{{ item.due_date or '-' }}</td><td><span class="badge">{{ item.status }}</span></td><td><a class="btn secondary" href="/compliance/deviations/{{ item.id }}">Open</a></td></tr>{% else %}<tr><td colspan="7" class="empty-state">No deviations.</td></tr>{% endfor %}</tbody></table>
+  <div class="section-head">
+    <h3>Active Deviations</h3>
+    <form method="get" class="actions" style="margin:0;">
+      <input name="q" value="{{ q }}" placeholder="Search">
+      <select name="status">
+        <option value="">All status</option>
+        {% for s in ['open','under_review','corrective_action_pending','closed','reopened'] %}
+        <option value="{{ s }}" {% if status==s %}selected{% endif %}>{{ s|replace('_', ' ')|title }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn secondary" type="submit">Filter</button>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>No.</th><th>Source</th><th>Severity</th><th>Responsible</th><th>Due</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody>
+        {% for item in rows %}
+        <tr>
+          <td>{{ item.deviation_number }}</td>
+          <td>{{ item.source_module }}</td>
+          <td>
+            <span class="badge badge-{{ item.severity }}">
+              {{ item.severity|title }}
+            </span>
+          </td>
+          <td>{{ item.responsible_person.full_name if item.responsible_person else '-' }}</td>
+          <td>{{ item.due_date or '-' }}</td>
+          <td><span class="badge">{{ item.status|replace('_', ' ')|title }}</span></td>
+          <td><a class="btn secondary" href="/compliance/deviations/{{ item.id }}">Open</a></td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="7">
+            <div class="empty-state">
+              <svg class="empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path><path d="m9 12 2 2 4-4"></path></svg>
+              <div>No deviations recorded.</div>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </section>
 {% endblock %}

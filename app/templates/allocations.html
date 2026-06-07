@@ -1,25 +1,27 @@
 {% extends "base.html" %}
 {% set page_title = "Allocations" %}
-{% set page_subtitle = "Assignment, approval, policy review, and employee signing in one workspace." %}
+{% set page_subtitle = "Manage asset allocations and assignments." %}
 {% block content %}
 <div class="stack">
   {% if current_user.role in ["hardware_admin", "super_admin"] %}
   <section class="surface">
     <div class="section-head">
       <div>
-        <h3>Create Allocation</h3>
-        <div class="help">Submit a new asset allocation for HR review and employee signature.</div>
+        <div class="kicker">Assignment</div>
+        <h3>New Allocation</h3>
       </div>
     </div>
     <form method="post" class="form-grid">
-      <label>Asset
-        <select name="asset_id">{% for asset in assets %}<option value="{{ asset.id }}">{{ asset.asset_code }} - {{ asset.name }}</option>{% endfor %}</select>
-      </label>
-      <label>Employee
-        <select name="employee_id">{% for employee in employees %}<option value="{{ employee.id }}">{{ employee.full_name }}</option>{% endfor %}</select>
-      </label>
-      <label style="grid-column: 1 / -1;">Remarks <textarea name="remarks" placeholder="Allocation notes, context, or handover conditions"></textarea></label>
-      <div class="actions" style="grid-column: 1 / -1;"><button class="btn primary" type="submit">Submit Allocation</button></div>
+      <div class="two-col">
+        <label>Asset
+          <select name="asset_id">{% for asset in assets %}<option value="{{ asset.id }}">{{ asset.asset_code }} - {{ asset.name }}</option>{% endfor %}</select>
+        </label>
+        <label>Employee
+          <select name="employee_id">{% for employee in employees %}<option value="{{ employee.id }}">{{ employee.full_name }}</option>{% endfor %}</select>
+        </label>
+      </div>
+      <label style="grid-column: 1 / -1;">Remarks <textarea name="remarks"></textarea></label>
+      <div class="actions" style="grid-column: 1 / -1; justify-content: flex-end;"><button class="btn primary" type="submit">Submit Assignment</button></div>
     </form>
   </section>
   {% endif %}
@@ -28,12 +30,12 @@
   <section class="surface policy-callout">
     <div class="section-head">
       <div>
+        <div class="kicker">Information</div>
         <h3>Policy and Agreement</h3>
-        <div class="help">Review the approved policy before OTP signing.</div>
       </div>
       <div class="actions">
-        <a class="btn secondary" href="/policy/reader" target="_blank">Open Reader</a>
-        <a class="btn ghost" href="{{ policy_sample_url }}" target="_blank">Open PDF</a>
+        <a class="btn secondary" href="/policy/reader" target="_blank">📖 Reader</a>
+        <a class="btn secondary" href="{{ policy_sample_url }}" target="_blank">📄 PDF</a>
       </div>
     </div>
     {% if active_policy %}
@@ -53,17 +55,17 @@
   <section class="surface">
     <div class="section-head">
       <div>
+        <div class="kicker">Directory</div>
         <h3>Allocation Register</h3>
-        <div class="help">Track approval status, policy access, and employee signing actions.</div>
       </div>
       <div class="toolbar">
-        <input class="search-box" data-table-search="allocations-table" placeholder="Search assets or employees">
+        <input class="search-box" data-table-search="allocations-table" placeholder="Search...">
         <select data-table-status="allocations-table">
-          <option value="">All Statuses</option>
+          <option value="">All Status</option>
           <option value="submitted">Submitted</option>
-          <option value="pending_signature">Pending signature</option>
+          <option value="pending_signature">Pending Signature</option>
           <option value="signed">Signed</option>
-          <option value="sent_back">Sent back</option>
+          <option value="sent_back">Sent Back</option>
           <option value="rejected">Rejected</option>
         </select>
       </div>
@@ -76,8 +78,8 @@
           <tr data-status="{{ item.status }}">
             <td>{{ item.asset.asset_code }}<br><span class="help">{{ item.asset.name }}</span></td>
             <td>{{ item.employee.full_name }}</td>
-            <td><span class="badge {% if item.status == 'signed' %}success{% elif item.status in ['sent_back', 'rejected'] %}danger{% else %}warning{% endif %}">{{ item.status.replace("_", " ").title() }}</span></td>
-            <td class="table-actions">
+            <td><span class="badge {% if item.status == 'signed' %}success{% elif item.status == 'sent_back' %}danger{% elif item.status == 'rejected' %}danger{% else %}warning{% endif %}">{{ item.status|replace('_', ' ')|title }}</span></td>
+            <td>
               {% if current_user.role in ["hr_admin", "super_admin"] and item.status in ["submitted", "sent_back"] %}
               <a class="btn ghost" href="/allocations/{{ item.id }}/decision">Review</a>
               {% elif item.employee_id == current_user.id and item.status == "pending_signature" %}
@@ -96,7 +98,14 @@
             </td>
           </tr>
           {% else %}
-          <tr><td colspan="4"><div class="empty-state">No allocations available.</div></td></tr>
+          <tr>
+            <td colspan="4">
+              <div class="empty-state">
+                <svg class="empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h14a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v4"></path><polyline points="14 2 14 8 20 8"></polyline><path d="m3 15 2 2 4-4"></path></svg>
+                <div>No allocations available.</div>
+              </div>
+            </td>
+          </tr>
           {% endfor %}
         </tbody>
       </table>

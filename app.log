@@ -1,0 +1,71 @@
+INFO:     Started server process [5523]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:41806 - "POST /login HTTP/1.1" 303 See Other
+INFO:     127.0.0.1:47754 - "GET /allocations HTTP/1.1" 303 See Other
+INFO:     127.0.0.1:47754 - "GET /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55244 - "POST /login HTTP/1.1" 303 See Other
+INFO:     127.0.0.1:55258 - "GET /allocations HTTP/1.1" 303 See Other
+INFO:     127.0.0.1:55258 - "GET /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40686 - "GET /allocations HTTP/1.1" 303 See Other
+INFO:     127.0.0.1:40686 - "GET /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46968 - "POST /login HTTP/1.1" 303 See Other
+INFO:     127.0.0.1:39140 - "GET /allocations HTTP/1.1" 303 See Other
+INFO:     127.0.0.1:39140 - "GET /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52732 - "POST /login HTTP/1.1" 303 See Other
+INFO:     127.0.0.1:34534 - "GET /dashboard HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:53956 - "POST /login HTTP/1.1" 303 See Other
+INFO:     127.0.0.1:44930 - "GET /dashboard HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:35584 - "POST /login HTTP/1.1" 303 See Other
+INFO:     127.0.0.1:58418 - "GET /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37646 - "GET /allocations HTTP/1.1" 303 See Other
+INFO:     127.0.0.1:33264 - "POST /login HTTP/1.1" 303 See Other
+INFO:     127.0.0.1:35522 - "GET /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44514 - "POST /login HTTP/1.1" 303 See Other
+INFO:     127.0.0.1:55176 - "GET /allocations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33802 - "POST /login HTTP/1.1" 303 See Other
+INFO:     127.0.0.1:46062 - "HEAD /allocations HTTP/1.1" 405 Method Not Allowed
+INFO:     127.0.0.1:47532 - "GET /allocations HTTP/1.1" 303 See Other
+INFO:     127.0.0.1:47532 - "GET /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57042 - "POST /login HTTP/1.1" 303 See Other
+INFO:     127.0.0.1:53096 - "POST /login HTTP/1.1" 303 See Other
+INFO:     127.0.0.1:58108 - "GET /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48864 - "POST /login HTTP/1.1" 303 See Other
+INFO:     127.0.0.1:41396 - "HEAD /allocations HTTP/1.1" 405 Method Not Allowed
+INFO:     127.0.0.1:60148 - "GET /allocations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45658 - "GET /compliance/deviations HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:32788 - "GET /policies HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:44394 - "POST /login HTTP/1.1" 303 See Other
+INFO:     127.0.0.1:45894 - "GET /policies HTTP/1.1" 303 See Other
+INFO:     127.0.0.1:45894 - "GET /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41324 - "GET /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56038 - "POST /login HTTP/1.1" 303 See Other
+INFO:     127.0.0.1:37516 - "HEAD /compliance/deviations HTTP/1.1" 405 Method Not Allowed
+INFO:     127.0.0.1:48976 - "GET /compliance/deviations HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:56792 - "GET /policies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58222 - "POST /login HTTP/1.1" 303 See Other
+INFO:     127.0.0.1:58164 - "GET /compliance/deviations HTTP/1.1" 303 See Other
+INFO:     127.0.0.1:58164 - "GET /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36964 - "GET /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47592 - "POST /login HTTP/1.1" 303 See Other
+INFO:     127.0.0.1:49144 - "GET /compliance/deviations HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:53612 - "GET /compliance/deviations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41072 - "GET /policies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37438 - "GET /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37438 - "GET /static/css/app.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37438 - "POST /login HTTP/1.1" 303 See Other
+INFO:     127.0.0.1:37438 - "GET /dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37438 - "GET /compliance/deviations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37438 - "GET /allocations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34580 - "GET /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34580 - "GET /static/css/app.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34580 - "POST /login HTTP/1.1" 303 See Other
+INFO:     127.0.0.1:34580 - "GET /dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34580 - "GET /compliance/deviations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34580 - "GET /policies HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55160 - "GET /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55160 - "GET /static/css/app.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55160 - "POST /login HTTP/1.1" 303 See Other
+INFO:     127.0.0.1:55160 - "GET /dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55160 - "GET /allocations HTTP/1.1" 200 OK

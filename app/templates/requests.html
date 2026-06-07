@@ -1,11 +1,126 @@
 {% extends "base.html" %}
-{% set page_title = "Request History" %}
-{% set page_subtitle = "" %}
+{% set page_title = "My Requests" %}
+{% set page_subtitle = "Raise support tickets, submit travel requests, initiate returns, and track every request from one employee workspace." %}
 {% block content %}
 <div class="stack">
+  <div class="summary-grid">
+    <div class="summary-tile">
+      <div class="kicker">Active Assets</div>
+      <div class="main">{{ active_assets|length }}</div>
+      <div class="sub">Signed allocations available for requests</div>
+    </div>
+    <div class="summary-tile">
+      <div class="kicker">Open Tickets</div>
+      <div class="main">{{ tickets|selectattr("status", "ne", "closed")|list|length }}</div>
+      <div class="sub">Maintenance issues under process</div>
+    </div>
+    <div class="summary-tile">
+      <div class="kicker">Travel Requests</div>
+      <div class="main">{{ travel_requests|length }}</div>
+      <div class="sub">Abroad carry requests raised</div>
+    </div>
+    <div class="summary-tile">
+      <div class="kicker">Return Requests</div>
+      <div class="main">{{ return_requests|length }}</div>
+      <div class="sub">Exit or asset return requests submitted</div>
+    </div>
+  </div>
+
   <section class="surface">
     <div class="section-head">
-      <h3>My Request Timeline</h3>
+      <div>
+        <h3>Request Workspace</h3>
+        <div class="help">Use this page to raise employee-side requests instead of navigating separate modules manually.</div>
+      </div>
+    </div>
+    {% if active_assets|length == 0 %}
+    <div class="empty-state">No signed asset allocation is available yet. Ticket, travel, and return requests become available once an asset is actively assigned to you.</div>
+    {% else %}
+    <div class="request-workspace-grid">
+      <section class="request-panel">
+        <div class="eyebrow">Support</div>
+        <h4>Raise Maintenance Ticket</h4>
+        <form method="post" action="/maintenance" class="form-grid compact-form">
+          <label>Asset
+            <select name="asset_id" required>
+              {% for asset in active_assets %}
+              <option value="{{ asset.id }}">{{ asset.asset_code }} - {{ asset.name }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>Issue Type
+            <input name="issue_type" placeholder="Battery, display, keyboard..." required>
+          </label>
+          <label style="grid-column: 1 / -1;">Description
+            <textarea name="description" required placeholder="Describe the issue, failure symptoms, or urgency."></textarea>
+          </label>
+          <div class="actions" style="grid-column: 1 / -1;">
+            <button class="btn primary" type="submit">Create Ticket</button>
+            <a class="btn ghost" href="/maintenance">Open Ticket Register</a>
+          </div>
+        </form>
+      </section>
+
+      <section class="request-panel">
+        <div class="eyebrow">Travel</div>
+        <h4>Raise Abroad Asset Request</h4>
+        <form method="post" action="/travel" class="form-grid compact-form">
+          <label>Asset
+            <select name="asset_id" required>
+              {% for asset in active_assets %}
+              <option value="{{ asset.id }}">{{ asset.asset_code }} - {{ asset.name }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>Destination Country
+            <input name="destination_country" required>
+          </label>
+          <label>Departure Date
+            <input type="date" name="departure_date" required>
+          </label>
+          <label>Return Date
+            <input type="date" name="return_date" required>
+          </label>
+          <label style="grid-column: 1 / -1;">Purpose
+            <textarea name="purpose" required placeholder="Reason for taking the assigned asset abroad."></textarea>
+          </label>
+          <div class="actions" style="grid-column: 1 / -1;">
+            <button class="btn primary" type="submit">Submit Travel Request</button>
+            <a class="btn ghost" href="/travel">Open Travel Register</a>
+          </div>
+        </form>
+      </section>
+
+      <section class="request-panel">
+        <div class="eyebrow">Return</div>
+        <h4>Initiate Asset Return</h4>
+        <form method="post" action="/returns" class="form-grid compact-form">
+          <label>Asset
+            <select name="asset_id" required>
+              {% for asset in active_assets %}
+              <option value="{{ asset.id }}">{{ asset.asset_code }} - {{ asset.name }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label style="grid-column: 1 / -1;">Reason
+            <textarea name="reason" required placeholder="Reason for return, handover, exit, or reallocation."></textarea>
+          </label>
+          <div class="actions" style="grid-column: 1 / -1;">
+            <button class="btn primary" type="submit">Initiate Return</button>
+            <a class="btn ghost" href="/returns">Open Return Register</a>
+          </div>
+        </form>
+      </section>
+    </div>
+    {% endif %}
+  </section>
+
+  <section class="surface">
+    <div class="section-head">
+      <div>
+        <h3>My Request Timeline</h3>
+        <div class="help">All employee-side requests across allocation, maintenance, travel, and return workflows.</div>
+      </div>
     </div>
     <div class="table-wrap">
       <table>
@@ -16,9 +131,9 @@
             <td>{{ item.created_at.strftime("%Y-%m-%d") }}</td>
             <td>{{ item.type }}</td>
             <td>{{ item.reference }}</td>
-            <td>{{ item.status }}</td>
+            <td>{{ item.status.replace("_", " ").title() }}</td>
             <td>{{ item.remarks }}</td>
-            <td><a href="{{ item.link }}">Open</a></td>
+            <td><a class="btn ghost" href="{{ item.link }}">Open</a></td>
           </tr>
           {% else %}
           <tr><td colspan="6"><div class="empty-state">No request history available.</div></td></tr>

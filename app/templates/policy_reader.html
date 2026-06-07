@@ -1,26 +1,34 @@
 {% extends "public_base.html" if is_public_reader else "base.html" %}
 {% set title = "Policy Reader - CDIPD Asset Management" %}
 {% set page_title = "Policy Reader" %}
-{% set page_subtitle = "" %}
+{% set page_subtitle = "Controlled document view with allocation context, document metadata, and clean section navigation." %}
 {% block content %}
-<div class="stack">
-  <section class="surface">
-    <div class="section-head">
-      <div>
-        <div class="kicker">{{ policy_meta.document_code }}</div>
-        <div class="title" style="font-size: 1.8rem; margin-top: 8px;">{{ policy_meta.title }}</div>
-        <div class="help" style="margin-top: 8px;">{{ policy_meta.org_name }}</div>
-        <div class="help">{{ policy_meta.unit_name }}</div>
-        <div class="help">{{ policy_meta.unit_note }}</div>
-        <div class="help" style="margin-top: 10px;">Format ID {{ policy_meta.format_id }} | Version {{ policy_meta.version }} | Released {{ policy_meta.release_date }}</div>
-        {% if policy %}
-        <div class="help" style="margin-top: 10px;">Policy Master {{ policy.policy_master.policy_code if policy.policy_master else "-" }} | Version {{ policy.version }} | Status {{ policy.status }}</div>
-        {% endif %}
+<div class="stack policy-reader-stack">
+  <section class="surface policy-hero">
+    <div class="policy-hero-copy">
+      <div class="kicker">{{ policy_meta.document_code }}</div>
+      <h1>{{ policy_meta.title }}</h1>
+      <p class="help">{{ policy_meta.org_name }} | {{ policy_meta.unit_name }}</p>
+      <p class="help">{{ policy_meta.unit_note }}</p>
+      <div class="policy-meta-row">
+        <span>Format {{ policy_meta.format_id }}</span>
+        <span>Version {{ policy.version if policy else policy_meta.version }}</span>
+        <span>Released {{ policy_meta.release_date }}</span>
       </div>
+      {% if policy %}
+      <div class="policy-meta-row">
+        <span>Policy {{ policy.policy_master.policy_code if policy.policy_master else "-" }}</span>
+        <span>Status {{ policy.status.replace("_", " ").title() }}</span>
+        <span>{{ "Published" if policy.published else "Draft" }}</span>
+      </div>
+      {% endif %}
+    </div>
+    <div class="policy-hero-actions">
+      <img src="/static/img/future-orbit.svg" alt="Policy workspace illustration">
       <div class="actions">
-        <a class="btn secondary" href="/policy/current" target="_blank">Open PDF</a>
+        <a class="btn primary" href="/policy/current" target="_blank">Open PDF</a>
         {% if not is_public_reader %}
-        <a class="btn secondary" href="/allocations">Back</a>
+        <a class="btn ghost" href="{{ back_href }}">Back</a>
         {% endif %}
       </div>
     </div>
@@ -33,64 +41,95 @@
   {% if allocation %}
   <section class="surface">
     <div class="section-head">
-      <h3>Allocation Agreement Context</h3>
+      <div>
+        <h3>Allocation Agreement Context</h3>
+        <div class="help">This policy view is tied directly to the allocation the employee must sign.</div>
+      </div>
     </div>
-    <div class="document-grid">
-      <div class="document-block">
+    <div class="detail-grid">
+      <div class="detail-card">
         <div class="eyebrow">Employee</div>
-        <div style="font-weight:700; margin-top: 8px;">{{ allocation.employee.full_name }}</div>
+        <strong>{{ allocation.employee.full_name }}</strong>
         <div class="help">{{ allocation.employee.employee_code }}</div>
       </div>
-      <div class="document-block">
+      <div class="detail-card">
         <div class="eyebrow">Asset</div>
-        <div style="font-weight:700; margin-top: 8px;">{{ allocation.asset.asset_code }} - {{ allocation.asset.name }}</div>
+        <strong>{{ allocation.asset.asset_code }} - {{ allocation.asset.name }}</strong>
         <div class="help">{{ allocation.asset.model }} | {{ allocation.asset.serial_number }}</div>
       </div>
-      <div class="document-block">
+      <div class="detail-card">
         <div class="eyebrow">Location</div>
-        <div style="font-weight:700; margin-top: 8px;">{{ allocation.asset.location.name }}</div>
+        <strong>{{ allocation.asset.location.name if allocation.asset.location else "-" }}</strong>
+        <div class="help">Issued under approved policy context</div>
       </div>
-      <div class="document-block">
+      <div class="detail-card">
         <div class="eyebrow">Policy Version</div>
-        <div style="font-weight:700; margin-top: 8px;">{{ policy.version if policy else policy_meta.version }}</div>
+        <strong>{{ policy.version if policy else policy_meta.version }}</strong>
+        <div class="help">{{ policy.title if policy else policy_meta.title }}</div>
       </div>
     </div>
   </section>
   {% endif %}
 
-  {% if templates %}
-  <section class="surface">
-    <div class="section-head">
-      <h3>Linked Document Templates</h3>
-    </div>
-    <div class="document-grid">
-      {% for item in templates %}
-      <div class="document-block">
-        <div class="eyebrow">{{ item.template_type }}</div>
-        <div style="font-weight:700; margin-top: 8px;">{{ item.template_name }}</div>
-        <div class="help" style="margin-top: 8px;">{{ item.template_code }}</div>
+  <div class="policy-layout">
+    <aside class="surface policy-sidebar">
+      <div class="section-head">
+        <div>
+          <h3>Quick Contents</h3>
+          <div class="help">Navigate the controlled document sections.</div>
+        </div>
       </div>
-      {% endfor %}
-    </div>
-  </section>
-  {% endif %}
+      <nav class="policy-toc">
+        {% for section in sections %}
+        <a href="#policy-section-{{ loop.index }}">{{ section.title }}</a>
+        {% endfor %}
+      </nav>
+      <div class="policy-obligation-box">
+        <div class="kicker">Key Obligations</div>
+        <ul>
+          {% for item in policy_terms %}
+          <li>{{ item }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% if templates %}
+      <div class="policy-obligation-box">
+        <div class="kicker">Linked Templates</div>
+        <div class="stack" style="gap: 10px;">
+          {% for item in templates %}
+          <div class="detail-card compact">
+            <div class="eyebrow">{{ item.template_type }}</div>
+            <strong>{{ item.template_name }}</strong>
+            <div class="help">{{ item.template_code }}</div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </aside>
 
-  {% for section in sections %}
-  <section class="surface">
-    <div class="section-head">
-      <h3>{{ section.title }}</h3>
-    </div>
-    {% for paragraph in section.get("paragraphs", []) %}
-    <div class="help" style="margin-bottom: 10px;">{{ paragraph }}</div>
-    {% endfor %}
-    {% if section.get("bullets") %}
-    <ul style="margin: 0; padding-left: 20px; color: var(--text-soft);">
-      {% for item in section.get("bullets", []) %}
-      <li style="margin-bottom: 10px;">{{ item }}</li>
+    <div class="policy-content">
+      {% for section in sections %}
+      <section class="surface policy-article" id="policy-section-{{ loop.index }}">
+        <div class="section-head">
+          <div>
+            <div class="kicker">Section {{ loop.index }}</div>
+            <h3>{{ section.title }}</h3>
+          </div>
+        </div>
+        {% for paragraph in section.get("paragraphs", []) %}
+        <p class="policy-paragraph">{{ paragraph }}</p>
+        {% endfor %}
+        {% if section.get("bullets") %}
+        <ul class="policy-bullets">
+          {% for item in section.get("bullets", []) %}
+          <li>{{ item }}</li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+      </section>
       {% endfor %}
-    </ul>
-    {% endif %}
-  </section>
-  {% endfor %}
+    </div>
+  </div>
 </div>
 {% endblock %}

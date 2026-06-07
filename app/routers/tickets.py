@@ -157,7 +157,39 @@ async def travel_page(request: Request, db: Session = Depends(get_db)):
 async def request_history_page(request: Request, db: Session = Depends(get_db)):
     current_user = get_current_user(request, db)
     history = build_request_history(db, current_user)
-    return render(request, "requests.html", {"history": history}, current_user)
+    signed_allocations = db.scalars(
+        select(Allocation)
+        .where(Allocation.employee_id == current_user.id, Allocation.status == "signed")
+        .order_by(Allocation.created_at.desc())
+    ).all()
+    active_assets = [allocation.asset for allocation in signed_allocations]
+    tickets = db.scalars(
+        select(MaintenanceTicket)
+        .where(MaintenanceTicket.raised_by_id == current_user.id)
+        .order_by(MaintenanceTicket.created_at.desc())
+    ).all()
+    travel_requests = db.scalars(
+        select(TravelRequest)
+        .where(TravelRequest.employee_id == current_user.id)
+        .order_by(TravelRequest.created_at.desc())
+    ).all()
+    return_requests = db.scalars(
+        select(ReturnRequest)
+        .where(ReturnRequest.employee_id == current_user.id)
+        .order_by(ReturnRequest.created_at.desc())
+    ).all()
+    return render(
+        request,
+        "requests.html",
+        {
+            "history": history,
+            "active_assets": active_assets,
+            "tickets": tickets,
+            "travel_requests": travel_requests,
+            "return_requests": return_requests,
+        },
+        current_user,
+    )
 
 @router.post("/travel")
 @require_roles("employee")

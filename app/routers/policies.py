@@ -20,6 +20,7 @@ from app.services.helpers import (
     render,
     require_permission,
     require_roles,
+    user_has_role,
 )
 
 router = APIRouter()
@@ -331,14 +332,15 @@ async def current_policy_reader(request: Request, db: Session = Depends(get_db))
     allocation = None
     if allocation_id and allocation_id.isdigit():
         candidate = db.get(Allocation, int(allocation_id))
-        if candidate and (not user or user.role != "employee" or candidate.employee_id == user.id):
+        if candidate and (not user or not user_has_role(user, "employee") or candidate.employee_id == user.id):
             allocation = candidate
     policy = allocation.policy if allocation and allocation.policy else None
-    if not policy and policy_id and policy_id.isdigit() and user and user.role in {"super_admin", "hr_admin"}:
+    if not policy and policy_id and policy_id.isdigit() and user and user_has_role(user, "super_admin", "hr_admin"):
         policy = db.get(PolicyVersion, int(policy_id))
     if not policy:
         policy = get_published_policy(db)
     templates = db.scalars(select(PolicyTemplate).where(PolicyTemplate.active == True).order_by(PolicyTemplate.template_name)).all()
+    back_href = "/allocations" if allocation else (request.headers.get("referer") or "/dashboard")
     return render(
         request,
         "policy_reader.html",
@@ -350,6 +352,7 @@ async def current_policy_reader(request: Request, db: Session = Depends(get_db))
             "policy_meta": POLICY_META,
             "policy_terms": POLICY_TERMS,
             "templates": templates,
+            "back_href": back_href,
         },
         user,
     )

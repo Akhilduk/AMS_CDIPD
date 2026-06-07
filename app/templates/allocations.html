@@ -27,7 +27,7 @@
   {% endif %}
 
   {% if current_user.role == "employee" and policy_sample_available %}
-  <section class="surface">
+  <section class="surface policy-callout">
     <div class="section-head">
       <div>
         <div class="kicker">Information</div>
@@ -39,11 +39,14 @@
       </div>
     </div>
     {% if active_policy %}
-    <div class="help" style="margin-bottom: 14px;">{{ active_policy.title }} - Version {{ active_policy.version }}</div>
+    <div class="help" style="margin-bottom: 14px;">{{ active_policy.title }} | Version {{ active_policy.version }}</div>
     {% endif %}
-    <div class="stack" style="gap: 10px;">
+    <div class="policy-term-grid">
       {% for item in policy_terms %}
-      <div class="help">{{ loop.index }}. {{ item }}</div>
+      <div class="policy-term-card">
+        <span class="policy-term-index">{{ "%02d"|format(loop.index) }}</span>
+        <div>{{ item }}</div>
+      </div>
       {% endfor %}
     </div>
   </section>
@@ -78,19 +81,19 @@
             <td><span class="badge {% if item.status == 'signed' %}success{% elif item.status == 'sent_back' %}danger{% elif item.status == 'rejected' %}danger{% else %}warning{% endif %}">{{ item.status|replace('_', ' ')|title }}</span></td>
             <td>
               {% if current_user.role in ["hr_admin", "super_admin"] and item.status in ["submitted", "sent_back"] %}
-              <a class="btn ghost" href="/allocations/{{ item.id }}/decision">📋 Decide</a>
-              {% elif current_user.role == "employee" and item.status == "pending_signature" %}
-              <a class="btn primary" href="/allocations/{{ item.id }}/sign">✍ Sign</a>
-              <a class="btn ghost" href="/policy/reader?allocation_id={{ item.id }}" target="_blank">📖 Agreement</a>
+              <a class="btn ghost" href="/allocations/{{ item.id }}/decision">Review</a>
+              {% elif item.employee_id == current_user.id and item.status == "pending_signature" %}
+              <a class="btn primary" href="/allocations/{{ item.id }}/sign">Sign Now</a>
+              <a class="btn ghost" href="/policy/reader?allocation_id={{ item.id }}" target="_blank">Read Agreement</a>
               {% elif item.status == "signed" %}
               {% set doc = document_map.get(item.id) %}
               {% if doc %}
-              <a class="btn ghost" href="/documents/{{ doc.id }}/view">👁 View</a>
+              <a class="btn ghost" href="/documents/{{ doc.id }}/view">View Document</a>
               {% else %}
-              <span class="help">✓ Signed</span>
+              <span class="help">Signed</span>
               {% endif %}
               {% else %}
-              <span class="help">-</span>
+              <span class="help">No action</span>
               {% endif %}
             </td>
           </tr>
@@ -108,7 +111,7 @@
       </table>
     </div>
     {% if demo_otp_mode %}
-    <div class="panel-note" style="margin-top: 14px;">Demo OTP mode is enabled.</div>
+    <div class="panel-note" style="margin-top: 14px;">Demo OTP mode is enabled for employee signing flows.</div>
     {% endif %}
   </section>
 </div>

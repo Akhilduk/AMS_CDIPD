@@ -5,21 +5,45 @@
 <div class="stack">
   <div class="summary-grid">
     <div class="summary-tile">
+
+      <div class="kpi-icon" style="color: var(--primary); margin-bottom: 8px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
+          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line>
+        </svg>
+      </div>
       <div class="kicker">Active Assets</div>
       <div class="main">{{ active_assets|length }}</div>
       <div class="sub">Signed allocations available for requests</div>
     </div>
     <div class="summary-tile">
+
+      <div class="kpi-icon" style="color: var(--warning); margin-bottom: 8px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
+          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+        </svg>
+      </div>
       <div class="kicker">Open Tickets</div>
       <div class="main">{{ tickets|selectattr("status", "ne", "closed")|list|length }}</div>
       <div class="sub">Maintenance issues under process</div>
     </div>
     <div class="summary-tile">
+
+      <div class="kpi-icon" style="color: var(--info); margin-bottom: 8px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
+          <path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.2-1.1.7L2.5 9l5.5 3.5-3.5 3.5c-.5.5-1.3.6-1.8.2L1 15l2 4 4 2 1.2-1.7c-.4-.5-.3-1.3.2-1.8l3.5-3.5L15 21.5c.5-.2.8-.6.7-1.1z"></path>
+        </svg>
+      </div>
       <div class="kicker">Travel Requests</div>
       <div class="main">{{ travel_requests|length }}</div>
       <div class="sub">Abroad carry requests raised</div>
     </div>
     <div class="summary-tile">
+
+      <div class="kpi-icon" style="color: var(--danger); margin-bottom: 8px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
+          <polyline points="9 14 4 9 9 4"></polyline><path d="M20 20v-7a4 4 0 0 0-4-4H4"></path>
+        </svg>
+      </div>
       <div class="kicker">Return Requests</div>
       <div class="main">{{ return_requests|length }}</div>
       <div class="sub">Exit or asset return requests submitted</div>
@@ -34,84 +58,115 @@
       </div>
     </div>
     {% if active_assets|length == 0 %}
-    <div class="empty-state">No signed asset allocation is available yet. Ticket, travel, and return requests become available once an asset is actively assigned to you.</div>
+    <div class="empty-state">
+            <svg class="empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+            No signed asset allocation is available yet. Ticket, travel, and return requests become available once an asset is actively assigned to you.</div>
     {% else %}
-    <div class="request-workspace-grid">
-      <section class="request-panel">
-        <div class="eyebrow">Support</div>
-        <h4>Raise Maintenance Ticket</h4>
-        <form method="post" action="/maintenance" class="form-grid compact-form">
-          <label>Asset
-            <select name="asset_id" required>
-              {% for asset in active_assets %}
-              <option value="{{ asset.id }}">{{ asset.asset_code }} - {{ asset.name }}</option>
-              {% endfor %}
-            </select>
-          </label>
-          <label>Issue Type
-            <input name="issue_type" placeholder="Battery, display, keyboard..." required>
-          </label>
-          <label style="grid-column: 1 / -1;">Description
-            <textarea name="description" required placeholder="Describe the issue, failure symptoms, or urgency."></textarea>
-          </label>
-          <div class="actions" style="grid-column: 1 / -1;">
-            <button class="btn primary" type="submit">Create Ticket</button>
-            <a class="btn ghost" href="/maintenance">Open Ticket Register</a>
-          </div>
-        </form>
-      </section>
 
-      <section class="request-panel">
-        <div class="eyebrow">Travel</div>
-        <h4>Raise Abroad Asset Request</h4>
-        <form method="post" action="/travel" class="form-grid compact-form">
-          <label>Asset
-            <select name="asset_id" required>
-              {% for asset in active_assets %}
-              <option value="{{ asset.id }}">{{ asset.asset_code }} - {{ asset.name }}</option>
-              {% endfor %}
-            </select>
-          </label>
-          <label>Destination Country
-            <input name="destination_country" required>
-          </label>
-          <label>Departure Date
-            <input type="date" name="departure_date" required>
-          </label>
-          <label>Return Date
-            <input type="date" name="return_date" required>
-          </label>
-          <label style="grid-column: 1 / -1;">Purpose
-            <textarea name="purpose" required placeholder="Reason for taking the assigned asset abroad."></textarea>
-          </label>
-          <div class="actions" style="grid-column: 1 / -1;">
-            <button class="btn primary" type="submit">Submit Travel Request</button>
-            <a class="btn ghost" href="/travel">Open Travel Register</a>
-          </div>
-        </form>
-      </section>
+    <div class="tabs-container">
+      <div class="tabs-nav">
+        <button class="tab-btn active" onclick="openTab(event, 'tab-maintenance')">Raise Maintenance Ticket</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-travel')">Raise Abroad Request</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-return')">Initiate Asset Return</button>
+      </div>
 
-      <section class="request-panel">
-        <div class="eyebrow">Return</div>
-        <h4>Initiate Asset Return</h4>
-        <form method="post" action="/returns" class="form-grid compact-form">
-          <label>Asset
-            <select name="asset_id" required>
-              {% for asset in active_assets %}
-              <option value="{{ asset.id }}">{{ asset.asset_code }} - {{ asset.name }}</option>
-              {% endfor %}
-            </select>
-          </label>
-          <label style="grid-column: 1 / -1;">Reason
-            <textarea name="reason" required placeholder="Reason for return, handover, exit, or reallocation."></textarea>
-          </label>
-          <div class="actions" style="grid-column: 1 / -1;">
-            <button class="btn primary" type="submit">Initiate Return</button>
-            <a class="btn ghost" href="/returns">Open Return Register</a>
-          </div>
-        </form>
-      </section>
+      <div class="tab-content active" id="tab-maintenance">
+        <section class="request-panel">
+          <div class="eyebrow">Support</div>
+          <h4>Raise Maintenance Ticket</h4>
+          <form method="post" action="/maintenance" class="form-grid compact-form">
+            <label>Asset
+              <select name="asset_id" required>
+                {% for asset in active_assets %}
+                <option value="{{ asset.id }}">{{ asset.asset_code }} - {{ asset.name }}</option>
+                {% endfor %}
+              </select>
+            </label>
+            <label>Issue Type
+              <input name="issue_type" placeholder="Battery, display, keyboard..." required>
+            </label>
+            <label style="grid-column: 1 / -1;">Description
+              <textarea name="description" required placeholder="Describe the issue, failure symptoms, or urgency."></textarea>
+            </label>
+            <div class="actions" style="grid-column: 1 / -1;">
+              <button class="btn primary" type="submit">Create Ticket</button>
+              <a class="btn ghost" href="/maintenance">Open Ticket Register</a>
+            </div>
+          </form>
+        </section>
+      </div>
+
+      <div class="tab-content" id="tab-travel">
+        <section class="request-panel">
+          <div class="eyebrow">Travel</div>
+          <h4>Raise Abroad Asset Request</h4>
+          <form method="post" action="/travel" class="form-grid compact-form">
+            <label>Asset
+              <select name="asset_id" required>
+                {% for asset in active_assets %}
+                <option value="{{ asset.id }}">{{ asset.asset_code }} - {{ asset.name }}</option>
+                {% endfor %}
+              </select>
+            </label>
+            <label>Destination Country
+              <input name="destination_country" required>
+            </label>
+            <label>Departure Date
+              <input type="date" name="departure_date" required>
+            </label>
+            <label>Return Date
+              <input type="date" name="return_date" required>
+            </label>
+            <label style="grid-column: 1 / -1;">Purpose
+              <textarea name="purpose" required placeholder="Reason for taking the assigned asset abroad."></textarea>
+            </label>
+            <div class="actions" style="grid-column: 1 / -1;">
+              <button class="btn primary" type="submit">Submit Travel Request</button>
+              <a class="btn ghost" href="/travel">Open Travel Register</a>
+            </div>
+          </form>
+        </section>
+      </div>
+
+      <div class="tab-content" id="tab-return">
+        <section class="request-panel">
+          <div class="eyebrow">Return</div>
+          <h4>Initiate Asset Return</h4>
+          <form method="post" action="/returns" class="form-grid compact-form">
+            <label>Asset
+              <select name="asset_id" required>
+                {% for asset in active_assets %}
+                <option value="{{ asset.id }}">{{ asset.asset_code }} - {{ asset.name }}</option>
+                {% endfor %}
+              </select>
+            </label>
+            <label style="grid-column: 1 / -1;">Reason
+              <textarea name="reason" required placeholder="Reason for return, handover, exit, or reallocation."></textarea>
+            </label>
+            <div class="actions" style="grid-column: 1 / -1;">
+              <button class="btn primary" type="submit">Initiate Return</button>
+              <a class="btn ghost" href="/returns">Open Return Register</a>
+            </div>
+          </form>
+        </section>
+      </div>
     </div>
+
+    <script>
+      function openTab(event, tabId) {
+        var contents = document.querySelectorAll('.tab-content');
+        contents.forEach(function(el) { el.classList.remove('active'); });
+        var btns = document.querySelectorAll('.tab-btn');
+        btns.forEach(function(el) { el.classList.remove('active'); });
+        document.getElementById(tabId).classList.add('active');
+        event.currentTarget.classList.add('active');
+      }
+    </script>
+
     {% endif %}
   </section>
 
@@ -136,7 +191,13 @@
             <td><a class="btn ghost" href="{{ item.link }}">Open</a></td>
           </tr>
           {% else %}
-          <tr><td colspan="6"><div class="empty-state">No request history available.</div></td></tr>
+          <tr><td colspan="6"><div class="empty-state">
+            <svg class="empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+            No request history available.</div></td></tr>
           {% endfor %}
         </tbody>
       </table>

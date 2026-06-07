@@ -18,7 +18,7 @@
           <h3>Create Policy Master</h3>
         </div>
       </div>
-      <form method="post" action="/policies/masters" class="form-grid">
+      <form method="post" action="/policies/masters" class="form-grid compact-form">
         <label>Policy Code <input name="policy_code" placeholder="POL-ASSET-RETURN" required></label>
         <label>Title <input name="title" required></label>
         <label>Owner Role
@@ -41,7 +41,7 @@
           <h3>Create Policy Version</h3>
         </div>
       </div>
-      <form method="post" action="/policies/versions" class="form-grid">
+      <form method="post" action="/policies/versions" class="form-grid compact-form">
         <label>Policy Master
           <select name="policy_master_id">{% for item in masters %}<option value="{{ item.id }}">{{ item.policy_code }} - {{ item.title }}</option>{% endfor %}</select>
         </label>
@@ -144,7 +144,7 @@
         <h3>Template Repository</h3>
       </div>
     </div>
-    <form method="post" action="/policies/templates" class="form-grid" style="margin-bottom: 18px;">
+    <form method="post" action="/policies/templates" class="form-grid compact-form" style="margin-bottom: 18px;">
       <div class="two-col">
         <label>Template Code <input name="template_code" placeholder="TPL-ASSET-HANDOVER" required></label>
         <label>Template Name <input name="template_name" placeholder="Asset Handover Note" required></label>

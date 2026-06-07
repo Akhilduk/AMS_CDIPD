@@ -42,6 +42,14 @@
   <div class="summary-grid dashboard-summary-grid dashboard-summary-grid-compact">
     {% for card in cards %}
     <a class="summary-tile dashboard-summary-tile dashboard-summary-tile-compact" href="{{ card.href or '#' }}">
+
+      <div class="kpi-icon" style="color: var(--primary); margin-bottom: 8px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="3" y1="9" x2="21" y2="9"></line>
+          <line x1="9" y1="21" x2="9" y2="9"></line>
+        </svg>
+      </div>
       <div class="kicker">{{ card.label }}</div>
       <div class="main">{{ card.value }}</div>
       <div class="sub">Open module</div>
@@ -49,27 +57,7 @@
     {% endfor %}
   </div>
 
-  {% if cards %}
-  <section class="surface analytics-panel analytics-panel-compact">
-    <div class="section-head">
-      <div>
-        <h3>Operational Mix</h3>
-        <div class="help">Relative volume across the visible dashboard KPIs.</div>
-      </div>
-    </div>
-    <div class="metric-bars metric-bars-compact" data-metric-bars>
-      {% for card in cards %}
-      <div class="metric-bar" data-value="{{ card.value if card.value is number else 0 }}">
-        <div class="metric-bar-head">
-          <span>{{ card.label }}</span>
-          <strong>{{ card.value }}</strong>
-        </div>
-        <div class="metric-bar-track"><span class="metric-bar-fill"></span></div>
-      </div>
-      {% endfor %}
-    </div>
-  </section>
-  {% endif %}
+
 
   {% if dashboard_role == "employee" %}
   <section class="surface">
@@ -94,7 +82,13 @@
             </td>
           </tr>
           {% else %}
-          <tr><td colspan="3"><div class="empty-state">No allocations available.</div></td></tr>
+          <tr><td colspan="3"><div class="empty-state">
+            <svg class="empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+            No allocations available.</div></td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -117,7 +111,13 @@
             <td><a class="btn ghost" href="/documents/{{ item.id }}/view">View</a></td>
           </tr>
           {% else %}
-          <tr><td colspan="3"><div class="empty-state">No signed documents available.</div></td></tr>
+          <tr><td colspan="3"><div class="empty-state">
+            <svg class="empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+            No signed documents available.</div></td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -141,7 +141,13 @@
             <td><a class="btn ghost" href="/assets/{{ item.id }}/history">View</a></td>
           </tr>
           {% else %}
-          <tr><td colspan="3"><div class="empty-state">No inventory records available.</div></td></tr>
+          <tr><td colspan="3"><div class="empty-state">
+            <svg class="empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+            No inventory records available.</div></td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -164,7 +170,13 @@
             <td>{{ status_badge(item.status) }}</td>
           </tr>
           {% else %}
-          <tr><td colspan="3"><div class="empty-state">No maintenance tickets available.</div></td></tr>
+          <tr><td colspan="3"><div class="empty-state">
+            <svg class="empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+            No maintenance tickets available.</div></td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -189,7 +201,13 @@
             <td><a class="btn ghost" href="/allocations/{{ item.id }}/decision">Review</a></td>
           </tr>
           {% else %}
-          <tr><td colspan="4"><div class="empty-state">No approval items pending.</div></td></tr>
+          <tr><td colspan="4"><div class="empty-state">
+            <svg class="empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+            No approval items pending.</div></td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -212,7 +230,13 @@
             <td>{{ status_badge(item.exit_clearance_status) }}</td>
           </tr>
           {% else %}
-          <tr><td colspan="3"><div class="empty-state">No return cases available.</div></td></tr>
+          <tr><td colspan="3"><div class="empty-state">
+            <svg class="empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+            No return cases available.</div></td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -236,7 +260,13 @@
             <td>{{ status_badge(item.status) }}</td>
           </tr>
           {% else %}
-          <tr><td colspan="3"><div class="empty-state">No travel requests available.</div></td></tr>
+          <tr><td colspan="3"><div class="empty-state">
+            <svg class="empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+            No travel requests available.</div></td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -259,7 +289,13 @@
             <td><a class="btn ghost" href="/assets/{{ item.id }}/history">View</a></td>
           </tr>
           {% else %}
-          <tr><td colspan="3"><div class="empty-state">No risk assets available.</div></td></tr>
+          <tr><td colspan="3"><div class="empty-state">
+            <svg class="empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+            No risk assets available.</div></td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -283,7 +319,13 @@
             <td><a class="btn ghost" href="/documents/{{ item.id }}/view">View</a></td>
           </tr>
           {% else %}
-          <tr><td colspan="3"><div class="empty-state">No signed documents available.</div></td></tr>
+          <tr><td colspan="3"><div class="empty-state">
+            <svg class="empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+            No signed documents available.</div></td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -306,7 +348,13 @@
             <td>{{ item.verified_by.full_name }}</td>
           </tr>
           {% else %}
-          <tr><td colspan="3"><div class="empty-state">No verification records available.</div></td></tr>
+          <tr><td colspan="3"><div class="empty-state">
+            <svg class="empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+            No verification records available.</div></td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -326,7 +374,13 @@
           {% for item in primary_rows %}
           <tr><td>{{ item.full_name }}</td><td>{{ item.email }}</td><td>{{ item.role }}</td></tr>
           {% else %}
-          <tr><td colspan="3"><div class="empty-state">No users available.</div></td></tr>
+          <tr><td colspan="3"><div class="empty-state">
+            <svg class="empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+            No users available.</div></td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -345,7 +399,13 @@
           {% for item in secondary_rows %}
           <tr><td>{{ item.version }}</td><td>{{ item.title }}</td><td>{{ "published" if item.published else "draft" }}</td></tr>
           {% else %}
-          <tr><td colspan="3"><div class="empty-state">No policies available.</div></td></tr>
+          <tr><td colspan="3"><div class="empty-state">
+            <svg class="empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+            No policies available.</div></td></tr>
           {% endfor %}
         </tbody>
       </table>

@@ -6,7 +6,7 @@
   <div class="split-card">
     <section class="surface">
       <div class="section-head"><h3>Create Campaign</h3></div>
-      <form method="post" action="/verification/campaigns" class="form-grid">
+      <form method="post" action="/verification/campaigns" class="form-grid compact-form">
         <label>Campaign Name <input name="campaign_name" required></label>
         <label>Asset Category
           <select name="asset_category"><option value="">All</option>{% for category in categories %}<option value="{{ category.name }}">{{ category.name }}</option>{% endfor %}</select>
@@ -28,7 +28,7 @@
 
     <section class="surface">
       <div class="section-head"><h3>Record Execution</h3></div>
-      <form method="post" action="/verification/executions" class="form-grid">
+      <form method="post" action="/verification/executions" class="form-grid compact-form">
         <label>Campaign
           <select name="campaign_id">{% for item in campaigns %}<option value="{{ item.id }}">{{ item.campaign_name }} ({{ item.status }})</option>{% endfor %}</select>
         </label>
@@ -56,7 +56,13 @@
           {% for item in campaigns %}
           <tr><td>{{ item.campaign_name }}</td><td>{{ item.asset_category or "All" }} / {{ item.department or "All" }} / {{ item.location or "All" }}</td><td>{{ item.verification_mode }}</td><td>{{ item.status }}</td></tr>
           {% else %}
-          <tr><td colspan="4"><div class="empty-state">No verification campaigns yet.</div></td></tr>
+          <tr><td colspan="4"><div class="empty-state">
+            <svg class="empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+            No verification campaigns yet.</div></td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -72,7 +78,13 @@
           {% for item in executions %}
           <tr><td>{{ item.campaign.campaign_name }}</td><td>{{ item.asset.asset_code }}</td><td>{{ item.result }}</td><td>{{ item.verified_by.full_name }}</td><td>{{ item.deviation_notes or "-" }}</td></tr>
           {% else %}
-          <tr><td colspan="5"><div class="empty-state">No verification executions yet.</div></td></tr>
+          <tr><td colspan="5"><div class="empty-state">
+            <svg class="empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+            No verification executions yet.</div></td></tr>
           {% endfor %}
         </tbody>
       </table>

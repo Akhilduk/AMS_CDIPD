@@ -16,7 +16,7 @@
         <h3>Request Asset Travel Approval</h3>
       </div>
     </div>
-    <form method="post" class="form-grid">
+    <form method="post" class="form-grid compact-form">
       <label>Asset
         <select name="asset_id">{% for asset in assets %}<option value="{{ asset.id }}">{{ asset.asset_code }} - {{ asset.name }}</option>{% endfor %}</select>
       </label>
@@ -65,7 +65,13 @@
           </tr>
           {% endfor %}
           {% if travel_requests|length == 0 %}
-          <tr><td colspan="6"><div class="empty-state">No travel requests yet. Approved or pending international carry requests will appear here.</div></td></tr>
+          <tr><td colspan="6"><div class="empty-state">
+            <svg class="empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+            No travel requests yet. Approved or pending international carry requests will appear here.</div></td></tr>
           {% endif %}
         </tbody>
       </table>

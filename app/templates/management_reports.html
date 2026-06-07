@@ -25,7 +25,13 @@
             <td>Allocate or retain as reserve</td>
           </tr>
           {% else %}
-          <tr><td colspan="4"><div class="empty-state">No idle assets available.</div></td></tr>
+          <tr><td colspan="4"><div class="empty-state">
+            <svg class="empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+            No idle assets available.</div></td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -47,7 +53,13 @@
             <td>{% if asset.status == "under_maintenance" %}Repair or replace{% elif asset.status == "liability_hold" %}Close liability{% else %}Review allocation{% endif %}</td>
           </tr>
           {% else %}
-          <tr><td colspan="3"><div class="empty-state">No risk assets available.</div></td></tr>
+          <tr><td colspan="3"><div class="empty-state">
+            <svg class="empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+            No risk assets available.</div></td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -72,7 +84,13 @@
           <tr><td>Maintenance</td><td>#{{ item.id }} - {{ item.asset.asset_code }}</td><td>{{ item.status }}</td></tr>
           {% endfor %}
           {% if management.travel_requests|length == 0 and management.returns|length == 0 and management.tickets|length == 0 %}
-          <tr><td colspan="3"><div class="empty-state">No management workflow records available.</div></td></tr>
+          <tr><td colspan="3"><div class="empty-state">
+            <svg class="empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+            No management workflow records available.</div></td></tr>
           {% endif %}
         </tbody>
       </table>
@@ -94,7 +112,13 @@
           <tr><td>Procurement</td><td>{{ item.category_name }} - {{ item.department }}</td><td>{{ item.suggested_procurement }} suggested</td></tr>
           {% endfor %}
           {% if management.disposals|length == 0 and management.procurement|length == 0 %}
-          <tr><td colspan="3"><div class="empty-state">No disposal or procurement items available.</div></td></tr>
+          <tr><td colspan="3"><div class="empty-state">
+            <svg class="empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+            No disposal or procurement items available.</div></td></tr>
           {% endif %}
         </tbody>
       </table>
@@ -116,7 +140,13 @@
           <tr><td>Verification</td><td>{{ item.campaign_name }}</td><td>{{ item.status }}</td></tr>
           {% endfor %}
           {% if management.backup_allocations|length == 0 and management.verification_campaigns|length == 0 %}
-          <tr><td colspan="3"><div class="empty-state">No backup or verification items available.</div></td></tr>
+          <tr><td colspan="3"><div class="empty-state">
+            <svg class="empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+            No backup or verification items available.</div></td></tr>
           {% endif %}
         </tbody>
       </table>

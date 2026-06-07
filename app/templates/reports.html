@@ -29,6 +29,88 @@
     {% endfor %}
   </div>
 
+
+  <section class="surface analytics-panel">
+    <div class="section-head">
+      <div>
+        <h3>Reports Visual Analytics</h3>
+        <div class="help">Visualized metrics from reports summary.</div>
+      </div>
+    </div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 16px;">
+        <div style="position: relative; height:300px;">
+            <canvas id="barChart"></canvas>
+        </div>
+        <div style="position: relative; height:300px; display:flex; justify-content:center;">
+            <canvas id="doughnutChart"></canvas>
+        </div>
+    </div>
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const rawData = [
+            {% for card in report_summary %}
+            { label: "{{ card.label }}", value: {{ card.value if card.value is number else 0 }} }{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ];
+
+        const labels = rawData.map(item => item.label);
+        const data = rawData.map(item => item.value);
+
+        const colors = [
+            'rgba(10, 37, 64, 0.8)',
+            'rgba(32, 201, 151, 0.8)',
+            'rgba(243, 156, 18, 0.8)',
+            'rgba(220, 53, 69, 0.8)',
+            'rgba(108, 117, 125, 0.8)'
+        ];
+
+        const barCtx = document.getElementById('barChart').getContext('2d');
+        new Chart(barCtx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Report Metrics',
+                    data: data,
+                    backgroundColor: colors,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+
+        const doughnutCtx = document.getElementById('doughnutChart').getContext('2d');
+        new Chart(doughnutCtx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: colors,
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: { position: 'right' }
+                }
+            }
+        });
+    });
+  </script>
+
   {% if report_summary %}
   <section class="surface analytics-panel">
     <div class="section-head">
@@ -63,7 +145,13 @@
           {% for row in asset_rows %}
           <tr><td>{{ row[0] }}</td><td>{{ row[1] }}</td><td>{{ row[2] }}</td><td>{{ row[3] }}</td></tr>
           {% else %}
-          <tr><td colspan="4"><div class="empty-state">No asset data available.</div></td></tr>
+          <tr><td colspan="4"><div class="empty-state">
+            <svg class="empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+            No asset data available.</div></td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -82,7 +170,13 @@
           {% for row in document_rows %}
           <tr><td>{{ row[0] }}</td><td>{{ row[1] }}</td><td>{{ row[2] }}</td><td class="mono">{{ row[3] }}</td></tr>
           {% else %}
-          <tr><td colspan="4"><div class="empty-state">No signed documents available.</div></td></tr>
+          <tr><td colspan="4"><div class="empty-state">
+            <svg class="empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+            No signed documents available.</div></td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -109,7 +203,13 @@
           {% for row in operations_rows %}
           <tr><td>{{ row[0] }}</td><td>{{ row[1] }}</td><td>{{ row[2] }}</td><td>{{ row[3] }}</td></tr>
           {% else %}
-          <tr><td colspan="4"><div class="empty-state">No lifecycle records available.</div></td></tr>
+          <tr><td colspan="4"><div class="empty-state">
+            <svg class="empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+            No lifecycle records available.</div></td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -139,7 +239,13 @@
           {% for row in verification_rows %}
           <tr><td>{{ row[0] }}</td><td>{{ row[1] }}</td><td>{{ row[2] }}</td><td>{{ row[3] }}</td></tr>
           {% else %}
-          <tr><td colspan="4"><div class="empty-state">No verification deviations available.</div></td></tr>
+          <tr><td colspan="4"><div class="empty-state">
+            <svg class="empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+            No verification deviations available.</div></td></tr>
           {% endfor %}
         </tbody>
       </table>

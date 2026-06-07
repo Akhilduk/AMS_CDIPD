@@ -11,7 +11,7 @@
         <h3>New Allocation</h3>
       </div>
     </div>
-    <form method="post" class="form-grid">
+    <form method="post" class="form-grid compact-form">
       <div class="two-col">
         <label>Asset
           <select name="asset_id">{% for asset in assets %}<option value="{{ asset.id }}">{{ asset.asset_code }} - {{ asset.name }}</option>{% endfor %}</select>

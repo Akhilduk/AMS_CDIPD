@@ -5,7 +5,7 @@
 <div class="stack">
   <section class="surface">
     <div class="section-head"><h3>Initiate Replacement</h3></div>
-    <form method="post" class="form-grid">
+    <form method="post" class="form-grid compact-form">
       <label>Old Asset <select name="old_asset_id">{% for asset in assets %}<option value="{{ asset.id }}">{{ asset.asset_code }} - {{ asset.name }}</option>{% endfor %}</select></label>
       <label>New Asset <select name="new_asset_id">{% for asset in assets %}<option value="{{ asset.id }}">{{ asset.asset_code }} - {{ asset.name }}</option>{% endfor %}</select></label>
       <label>Employee <select name="employee_id">{% for employee in employees %}<option value="{{ employee.id }}">{{ employee.full_name }}</option>{% endfor %}</select></label>
@@ -23,7 +23,13 @@
           {% for item in replacements %}
           <tr><td>#{{ item.id }}</td><td>{{ item.employee.full_name }}</td><td>{{ item.old_asset.asset_code }}</td><td>{{ item.new_asset.asset_code }}</td><td>{{ item.status }}</td><td>{{ item.reason }}</td></tr>
           {% else %}
-          <tr><td colspan="6"><div class="empty-state">No replacement records yet.</div></td></tr>
+          <tr><td colspan="6"><div class="empty-state">
+            <svg class="empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+            No replacement records yet.</div></td></tr>
           {% endfor %}
         </tbody>
       </table>

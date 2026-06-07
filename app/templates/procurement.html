@@ -5,7 +5,7 @@
 <div class="stack">
   <section class="surface">
     <div class="section-head"><h3>Generate Procurement Plan</h3></div>
-    <form method="post" class="form-grid">
+    <form method="post" class="form-grid compact-form">
       <label>Category <select name="category_name">{% for category in categories %}<option value="{{ category.name }}">{{ category.name }}</option>{% endfor %}</select></label>
       <label>Department <input name="department" value="CDIPD" required></label>
       <label>Forecast Period <select name="forecast_period_months"><option value="3">3 Months</option><option value="6">6 Months</option><option value="12">12 Months</option></select></label>
@@ -33,7 +33,13 @@
           {% for item in plans %}
           <tr><td>#{{ item.id }}</td><td>{{ item.category_name }}</td><td>{{ item.forecast_period_months }} months</td><td>{{ item.expected_demand }}</td><td>{{ item.replacement_due }}</td><td>{{ item.available_reusable_stock }}</td><td>{{ item.suggested_procurement }}</td><td>{{ item.estimated_budget }}</td></tr>
           {% else %}
-          <tr><td colspan="8"><div class="empty-state">No procurement plans yet.</div></td></tr>
+          <tr><td colspan="8"><div class="empty-state">
+            <svg class="empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+            No procurement plans yet.</div></td></tr>
           {% endfor %}
         </tbody>
       </table>
